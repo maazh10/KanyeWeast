@@ -704,7 +704,7 @@ async def on_message_delete(message):
 
 @bot.command(name="snipe",
 brief="Snipes last deleted message in channel.",
-help="Reytrives and sends the most recently deleted message in the current channel.")
+help="Retrieves and sends the most recently deleted message in the current channel.")
 async def snipe(ctx):
     channel = ctx.channel
     try:
