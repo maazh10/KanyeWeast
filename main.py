@@ -13,7 +13,6 @@ from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
 import datetime
 import pickle
-from database import db, valid_courses, TBD_DATE
 from time import sleep
 import string
 import shutil
@@ -50,12 +49,6 @@ def search_in_dex(pokemon: str):
         return_str = return_str + line.split("|")[1]
   print(return_str)
   return return_str
-  # file = open("water_pokemon.txt", "r")
-  # return_str = ""
-  # for line in file:
-  #   if re.search(pokemon, line):
-  #     return_str = return_str + line
-  # return return_str
 
 def get_national_dex(pokemon: str):
   pokemon = pokemon.replace("\_", ".")
@@ -231,31 +224,6 @@ help_command = commands.DefaultHelpCommand(
 )
 
 bot = commands.Bot(command_prefix='&', help_command = help_command, intents=discord.Intents.all())
-
-########################################################################################################
-
-# class Confirm(discord.ui.View):
-#     def __init__(self):
-#         super().__init__()
-#         self.value = None
-
-#     # When the confirm button is pressed, set the inner value to `True` and
-#     # stop the View from listening to more input.
-#     # We also send the user an ephemeral message that we're confirming their choice.
-#     @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
-#     async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
-#         await interaction.response.send_message('Confirming', ephemeral=True)
-#         self.value = True
-#         self.stop()
-
-#     # This one is similar to the confirmation button except sets the inner value to `False`
-#     @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
-#     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
-#         await interaction.response.send_message('Cancelling', ephemeral=True)
-#         self.value = False
-#         self.stop()
-
-########################################################################################################
 
 @bot.event
 async def on_ready():
@@ -450,7 +418,6 @@ help="Are you dumb what is there to understand")
 async def morning(ctx):
   embed = discord.Embed()
   embed.set_image(url="https://c.tenor.com/p-Eu-N2OuXkAAAAd/kanye-kanye-west.gif")
-  # embed.description='Good morning'
   await ctx.send(embed=embed)
 
 @bot.command(name="pingchef",
@@ -465,28 +432,13 @@ async def ping(ctx):
     else:
       await ctx.send(f"Call {chef.strip()} Gordon Ramsay :cook:")
 
-# @bot.command(name="ask")
-# async def ask(ctx):
-#     """Asks the user a question to confirm something."""
-#     # We create the view and assign it to a variable so we can wait for it later.
-#     view = Confirm()
-#     await ctx.send('Do you want to continue?', view=view)
-#     # Wait for the View to stop listening for input...
-#     await view.wait()
-#     if view.value is None:
-#         print('Timed out...')
-#     elif view.value:
-#         print('Confirmed...')
-#     else:
-#         print('Cancelled...')
-
 @bot.command(name="annoy", 
 brief="Annoys mentioned user", 
 help="Pings mentioned user the number of times specified")
 async def annoy(ctx, user = None, num_str = None, opt_str = None):
   invalid_num = False
   in_range = True
-  invalid_user = not user[0] == "<"
+  invalid_user = user[0] != "<"
   if num_str != None:
     invalid_num = not num_str.isdigit()
     if (not invalid_num):
@@ -507,12 +459,12 @@ async def annoy(ctx, user = None, num_str = None, opt_str = None):
     num = 5
     user = await bot.fetch_user(ctx.author.id)
 
-  annoy_string = " get annoyed <:Pepepunch:794437891648520224>" if (opt_str == None) else " " + opt_str
+  annoy_string = "get annoyed <:Pepepunch:794437891648520224>" if (opt_str == None) else " " + opt_str
   if num == 1:
     await ctx.send(user + annoy_string)
   else:
     for i in range(num):
-      sleepnum = randint(0, 1000)
+      sleepnum = randint(0, 30)
       print(f"{sleepnum}, {pinged.display_name}, {num - i}") if flag else print(f"{sleepnum}, {user}, {num - i}")
       await asyncio.sleep(sleepnum)
       if invalid_user or invalid_num or not in_range:
@@ -522,30 +474,6 @@ async def annoy(ctx, user = None, num_str = None, opt_str = None):
 
   await ctx.send("Have a nice day :kissing_heart:")
   
-
-# time = datetime.datetime.now
-# @tasks.loop(seconds=1)
-# async def timer():
-#   print("here")
-#   channel = bot.get_channel(865346448980049920)
-#   msg_sent = False
-#   estH = time().hour - 4
-#   while True:
-#     if estH == 17:
-#       if not msg_sent:
-#         await channel.send('its ' + str(estH) + ":" + str(time().minute))
-#         msg_sent = True
-#     else:
-#         msg_sent = False
-
-
-# @bot.event
-# async def on_message_join(member):
-#     channel = bot.get_channel(890998814197047316)
-#     embed=discord.Embed(title=f"Welcome {member.name}", description=f"Welcome to UTSC COM SCI {member.guild.name}! PoST is Hell, but we're all <:pepeOK:756640035750674483>") # F-Strings!
-#     embed.set_thumbnail(url=member.avatar_url) # Set the embed's thumbnail to the member's avatar image!
-
-#     await channel.send(embed=embed)
 
 @bot.command(name = "addchef", brief = "Adds a user to ping command", help = "Adds a user to ping command, only works for Kanye's developers")
 async def addchef(ctx, user):
@@ -581,51 +509,6 @@ async def removechef(ctx, user):
   else:
     await ctx.send("This command will not work for you pleb. Pathetic.")
 
-@bot.command(name="remind", brief="Reminds about upcoming assessments for a course", help="Displays upcoming assessment for the course given the channel where the command is used. Displays a list of all asssessments or all upcoming assessments if opt=all or opt=upcoming")
-async def remind(ctx, opt=""):
-  sort_db()
-  channel_name = ctx.message.channel.name
-  key = ""
-  for course in valid_courses:
-    if course in channel_name:
-      key = course
-  if key != "":
-    if key in db:
-      data = db[key]
-      assessments = list(data.keys())
-      if opt == "all":
-        msg = "**All assessments for " + key.upper() + ": **\n\n"
-        for name in assessments:
-          if data[name] != TBD_DATE:
-            dt = parse_dt(data[name])
-            msg += name + " on " + dt["month"] + " " + dt["day"] + ", " + dt["year"] + " at " + dt["hour"] + ":" + dt["min"] + " " + dt["ampm"] + "\n"
-          else:
-            msg += name + " on TBD" + " at TBD" +"\n"
-        await ctx.send(msg)
-      elif opt == "upcoming":
-        now = est_now()
-        msg = "**All upcoming assessments for " + key.upper() + ": **\n\n"
-        for name in assessments:
-          if data[name] >= now and data[name] != TBD_DATE:
-            dt = parse_dt(data[name])
-            msg += name + " on " + dt["month"] + " " + dt["day"] + ", " + dt["year"] + " at " + dt["hour"] + ":" + dt["min"] + " " + dt["ampm"] + "\n"
-          elif data[name] == TBD_DATE:
-            msg += name + " on TBD" + " at TBD" +"\n"
-        if msg == "All upcoming assessments: \n":
-           msg = "There are no upcoming assessments currently recorded for this course!"
-        await ctx.send(msg)
-      else:
-        nearest_dt = find_nearest_upcoming(data.values())
-        if nearest_dt != None and nearest_dt != TBD_DATE:
-          name = list(data.keys())[list(data.values()).index(nearest_dt)]
-          dt = parse_dt(nearest_dt)
-          await ctx.send("**Upcoming assessment for " + key.upper() + ": **\n\n" + name + " on " + dt["month"] + " " + dt["day"] + ", " + dt["year"] + " at " + dt["hour"] + ":" + dt["min"] + " " + dt["ampm"])
-        else:
-          await ctx.send("There are no upcoming assessments currently recorded for this course!")
-    else:
-      await ctx.send("There are no assessments currently recorded for this course!")
-  else:
-    await ctx.send("This command only works in course channels pleb.")
 
 @bot.command(name="play",
 brief="Play donda chants",
