@@ -3,7 +3,6 @@ from discord.ext import commands
 import os
 import requests
 import json
-import re
 import random
 from random import randint
 import asyncio
@@ -11,8 +10,6 @@ import lyricsgenius
 from colorthief import ColorThief
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
-import datetime
-import pickle
 from time import sleep
 import string
 import shutil
@@ -20,7 +17,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import json
 
-os.chdir('C:\\Users\\mhash\\Desktop\\KanyeWeast')
+#os.chdir('C:\\Users\\mhash\\Desktop\\KanyeWeast')
 f = open('secrets.json')
 keys = json.load(f)
 
@@ -28,38 +25,6 @@ def get_spotify_url(song_name: str):
   sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id = keys['SPOTIFY_CLIENT_ID'] , client_secret = keys['SPOTIFY_CLIENT_SECRET']))
   results = sp.search(q = song_name, limit=1)
   return results['tracks']['items'][0]['external_urls']['spotify']
-
-def search_for_water_type(test: str):
-  pokemon = test.split("`")[1]
-  pokemon = pokemon.replace("_", ".")
-  file = open("water_pokemon.txt", "r")
-  return_str = ""
-  for line in file:
-    if re.search(pokemon, line):
-      return_str = return_str + line
-  return return_str
-
-def search_in_dex(pokemon: str):
-  pokemon = pokemon.replace("\_", ".")
-  print(pokemon)
-  return_str = ""
-  with open("national-dex.txt", "r") as dex:
-    for line in dex:
-      if re.search(f"\|{pokemon}\|", line):
-        return_str = return_str + line.split("|")[1]
-  print(return_str)
-  return return_str
-
-def get_national_dex(pokemon: str):
-  pokemon = pokemon.replace("\_", ".")
-  return_str = ""
-  with open("national-dex.txt", "r") as dex:
-    for line in dex:
-      if re.search(pokemon, line):
-        return_str = line
-        break
-  n_and_name = return_str.split("|")
-  return {"number":n_and_name[0][1:4], "name":n_and_name[1], "imageurl":n_and_name[2]}
 
 def get_quote():
   response = requests.get("https://api.kanye.rest")
@@ -159,16 +124,6 @@ def get_song_info(to_search):
     lyrics = clean_lyric_footer(song.lyrics)
     return {"name": song.full_title, "url": song.url, "lyrics": lyrics, "color": get_color(song.header_image_thumbnail_url),"thumbnail": song.header_image_thumbnail_url}
 
-def check_if_caught(num, name):
-  caught_list = "caught_pokemon.txt" if (name == "me") else "caught_pokemon_vivian.txt"
-  caught = open("{}".format(caught_list), "r")
-  for line in caught:
-    if re.search(num, line):
-      caught.close()
-      return True
-  caught.close()
-  return False
-
 def show_html(URL_input):
        html = Request(URL_input, headers={'User-Agent':'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25'})
        return(urlopen(html).read())
@@ -182,43 +137,6 @@ def donda_date():
         date[i] = date[i].strip()
     return date
 
-def loadlist(filename):
-  with open(filename, "rb") as file:
-    pkl_list = pickle.load(file)
-  return pkl_list
-
-def dumplist(pkl_list: list, filename):
-  with open(filename, "wb") as file:
-    pickle.dump(pkl_list, file)
-
-def sort_db():
-  for course in db:
-    data = db[course]
-    sorted_values = sorted(data.values())
-    sorted_db = {}
-
-    for i in sorted_values:
-      for k in data.keys():
-          if data[k] == i and k not in sorted_db:
-              sorted_db[k] = data[k]
-              break
-    db[course] = sorted_db
-
-def parse_dt(dt):
-  return {"year": dt.strftime("%Y"), "month": dt.strftime("%B"), "day": dt.strftime("%d"), "hour": dt.strftime("%I"), "min": dt.strftime("%M"), "ampm": dt.strftime("%p")}
-
-def est_now():
-  now = datetime.datetime.now()
-  hour = (now.hour - 4) if ((now.hour - 4) >= 0) else 0
-  return datetime.datetime(now.year, now.month, now.day, hour, now.minute)
-
-def find_nearest_upcoming(dates):
-  now = est_now()
-  for event in sorted(dates):
-    if event >= now:
-      return event
-  return None 
-
 help_command = commands.DefaultHelpCommand(
     no_category = 'Commands'
 )
@@ -228,6 +146,11 @@ bot = commands.Bot(command_prefix='&', help_command = help_command, intents=disc
 @bot.event
 async def on_ready():
   print('We have logged in as {0.user}'.format(bot))
+
+@bot.command()
+async def shutdown(ctx):
+  if str(ctx.author.id) == keys['MY_ID'] or str(ctx.author.id) == keys['ID_STARBOY']:
+    exit()
 
 @bot.command(
   name="hello",
@@ -266,47 +189,6 @@ async def quote(ctx):
   embed.description='[{}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)'.format(get_quote())
   await ctx.send(embed=embed)
 
-@bot.command(name="spawn",
-  brief="Says name of pokemon spawned from Mewbot",
-  help="Gives the name and pokemondb entry of most recent spawned pokemon. Add caught to command to see most recent caught pokemon name and link")
-async def spawn(ctx):
-  prefix = "the pok"
-  flag = False
-  async for mesg in ctx.channel.history(limit=50):
-    if mesg.author.id == 716390085896962058:
-          if (mesg.content.lower().startswith(prefix)):
-            pokemon1 = mesg.content.split()[-1]
-            flag = True
-            break
-  if (flag):
-    pokemon = get_national_dex(pokemon1)
-    embed = discord.Embed(title=pokemon['name'], url="https://bulbapedia.bulbagarden.net/wiki/{}_(Pokémon)".format(pokemon['name']).replace(" ", "_"), description="#{0} - {1}".format(pokemon['number'], pokemon['name']))
-    # if str(ctx.author.id) == os.getenv('MY_ID'):
-    #   embed.add_field(name="Caught?", value = ( "Yes" if (check_if_caught(pokemon['number'], "me")) else "No"), inline=True)
-    # elif str(ctx.author.id) == os.getenv('ID_VIVIAN'):
-    #   embed.add_field(name="Caught?", value = ( "Yes" if (check_if_caught(pokemon['number'], "vivian")) else "No"), inline=True)
-    #embed.add_field(name="Shiny?", value=pokemon["shiny"])
-    embed.set_thumbnail(url=pokemon["imageurl"])
-    await ctx.send(embed=embed)
-
-@bot.command(name="fish",
-  brief="Says the name of the pokemon spawned from mewbot fish",
-  help="Says the name of the pokemon from most recent fish command from Mewbot")
-async def fish(ctx):
-  async for mesg in ctx.channel.history(limit=50):
-    if mesg.author.id == 519850436899897346:
-      e = mesg.embeds
-      if len(e) != 0:
-        e_dict = e[0].to_dict()
-        if 'title' in e_dict:
-          msg = mesg
-          break
-  embeds = msg.embeds
-  embed_content_in_dict = embeds[0].to_dict()
-  pokemon = search_for_water_type(embed_content_in_dict['title'])
-  print(pokemon)
-  await ctx.send(pokemon)
-
 @bot.command(name="rick",
 brief="Get Rick'd",
 help="Are you dumb what is there to understand")
@@ -333,7 +215,6 @@ brief="Says a lyric from the Weeknd",
 help="Says a random lyric from the Weeknd from any of his albums")
 # async def lyric(ctx, optional_alb=None):
 async def weeknd(ctx):
-  # await ctx.guild.me.edit(nick="El Fin de Semana")
   # if optional_alb == None:
   #   lyric = get_lyric("w", "")
   # else:
@@ -388,30 +269,6 @@ async def getlyrics(ctx):
 
     await ctx.send(embed=embed)
 
-@bot.command(name="add")
-async def add(ctx, num):
-  url = "test/{}-xxx".format(num)
-  pokemon_info = get_national_dex(url)
-  number = "{}".format(num).rjust(3, "0")
-  found = False
-  user = True
-  if str(ctx.author.id) == keys['MY_ID']:
-    caught_list = "caught_pokemon.txt"
-  elif str(ctx.author.id) == keys['ID_VIVIAN']:
-    caught_list = "caught_pokemon_vivian.txt"
-  else:
-    user = False
-    await ctx.send("Add command will not work for you pleb")
-  with open("{}".format(caught_list), "r") as f:
-    if "{}\n".format(number) in f.read():
-      found = True
-      await ctx.send("#{0} - {1} already in caught pokemon".format(number, pokemon_info['name']))
-  if (found == False) and (user == True):
-    caught = open("{}".format(caught_list), "a+")
-    caught.write("{}\n".format(number))
-    caught.close()
-    await ctx.send("Added #{0} - {1} to caught pokemon".format(number, pokemon_info['name']))
-
 @bot.command(name="morning",
 brief="Kanye says good morning",
 help="Are you dumb what is there to understand")
@@ -419,18 +276,6 @@ async def morning(ctx):
   embed = discord.Embed()
   embed.set_image(url="https://c.tenor.com/p-Eu-N2OuXkAAAAd/kanye-kanye-west.gif")
   await ctx.send(embed=embed)
-
-@bot.command(name="pingchef",
-brief="Pings all masterchefs",
-help="Pings all masterchefs added to the chefs list via &add")
-async def ping(ctx):
-  chefs = loadlist("chefs.pkl")
-  for chef in chefs:
-    if re.match('\d{18}', chef) is not None:
-      user = await bot.fetch_user(chef)
-      await ctx.send(f"Call {user.mention} Gordon Ramsay :cook:")
-    else:
-      await ctx.send(f"Call {chef.strip()} Gordon Ramsay :cook:")
 
 @bot.command(name="annoy", 
 brief="Annoys mentioned user", 
@@ -473,42 +318,6 @@ async def annoy(ctx, user = None, num_str = None, opt_str = None):
         await ctx.send(user + annoy_string + " " + str(num-i), delete_after=10)
 
   await ctx.send("Have a nice day :kissing_heart:")
-  
-
-@bot.command(name = "addchef", brief = "Adds a user to ping command", help = "Adds a user to ping command, only works for Kanye's developers")
-async def addchef(ctx, user):
-  if str(ctx.author.id) == keys['MY_ID'] or str(ctx.author.id) == keys['ID_STARBOY']:
-    chefs = loadlist("chefs.pkl")
-    if user in chefs:
-      await ctx.send("User already in chefs' list")
-    else:
-      chefs.insert(0,user)
-      dumplist(chefs, "chefs.pkl")
-      await ctx.send("User added to chefs' list")
-  else:
-    await ctx.send("This command will not work for you pleb. Pathetic.")
-
-
-@bot.command(name = "removechef", brief = "Removes a user from ping command", help = "Removes a user from ping command, only works for Kanye's developers")
-async def removechef(ctx, user):
-  if str(ctx.author.id) == keys['MY_ID'] or str(ctx.author.id) == keys['ID_STARBOY']:
-    chefs = loadlist("chefs.pkl")
-    if user not in chefs:
-      if (str(ctx.message.mentions[0].id) in chefs):
-        chefs.remove(str(ctx.message.mentions[0].id))
-        dumplist(chefs, "chefs.pkl")
-        await ctx.send("User removed from chefs' list")
-      else:
-        print(user)
-        print(chefs)
-        await ctx.send("User not in chefs' list")
-    else:
-      chefs.remove(user)
-      dumplist(chefs, "chefs.pkl")
-      await ctx.send("User removed from chefs' list")
-  else:
-    await ctx.send("This command will not work for you pleb. Pathetic.")
-
 
 @bot.command(name="play",
 brief="Play donda chants",
