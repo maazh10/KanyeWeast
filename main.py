@@ -17,7 +17,6 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import json
 
-#os.chdir('C:\\Users\\mhash\\Desktop\\KanyeWeast')
 f = open('secrets.json')
 keys = json.load(f)
 
@@ -328,7 +327,7 @@ async def play(ctx):
     if voice:
       voice_channel = voice.channel
       vc = await voice_channel.connect()
-      vc.play(discord.FFmpegPCMAudio("Kanye West - Donda Chant.mp3"))
+      vc.play(discord.FFmpegPCMAudio("play.mp3"))
       song_info = get_song_info("Donda Chant")
       embed = discord.Embed(
         title=song_info["name"], 
