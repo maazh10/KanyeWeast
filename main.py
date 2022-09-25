@@ -150,6 +150,7 @@ async def on_ready():
 @bot.command()
 async def shutdown(ctx):
   if str(ctx.author.id) == keys['MY_ID'] or str(ctx.author.id) == keys['ID_STARBOY']:
+    await ctx.send("Shutting down...")
     exit()
 
 @bot.command(
