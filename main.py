@@ -397,8 +397,8 @@ async def homir(ctx):
   await homies(ctx, 'mir')
 
 @bot.command(name="homo",
-brief="Sends homie pic of mir",
-help="Easy mir spamming for your enjoyment :)")
+brief="Sends homie pic of null",
+help="Easy null spamming for your enjoyment :)")
 async def homo(ctx):
   await homies(ctx, 'mo')
   
