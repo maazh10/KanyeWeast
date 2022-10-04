@@ -1,7 +1,7 @@
 # KanyeWeast
 Multi-purpose discord bot started as a collaborative project amone university students experimenting with APIs.
 
-# To get everything up and running:
+## To get everything up and running:
 - Clone the repo.
 - `cd` to repo
 - `pip3 install virtualenv` if not installed
