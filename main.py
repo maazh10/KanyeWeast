@@ -395,6 +395,12 @@ brief="Sends homie pic of mir",
 help="Easy mir spamming for your enjoyment :)")
 async def homir(ctx):
   await homies(ctx, 'mir')
+
+@bot.command(name="homo",
+brief="Sends homie pic of mir",
+help="Easy mir spamming for your enjoyment :)")
+async def homo(ctx):
+  await homies(ctx, 'mo')
   
 @bot.command(name="addpic",
 brief="Adds a new image to specified folder(s).",
