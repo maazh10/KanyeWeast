@@ -148,7 +148,7 @@ async def on_ready():
 
 @bot.command()
 async def shutdown(ctx):
-  if str(ctx.author.id) == keys['MY_ID'] or str(ctx.author.id) == keys['ID_STARBOY']:
+  if str(ctx.author.id) == keys['ID_BENNY'] or str(ctx.author.id) == keys['ID_STARBOY']:
     await ctx.send("Shutting down...")
     exit()
 
@@ -158,7 +158,7 @@ async def shutdown(ctx):
   help="Says hello to whoever used the `hello` command"
   )
 async def hello(ctx):
-  if str(ctx.author.id) == keys['MY_ID'] or str(ctx.author.id) == keys['ID_STARBOY']:
+  if str(ctx.author.id) == keys['ID_BENNY'] or str(ctx.author.id) == keys['ID_STARBOY']:
     if ctx.message.content.endswith('son'):
         await ctx.send('Hello master!')
     else:
@@ -359,8 +359,11 @@ brief="Sends homie pics",
 help="Send random homie pic. Use &homie [homie name]. Use &listhomies for a list of names. Picks random homie if no arguement provided.")
 async def homies(ctx, homie=""):
   homies = os.listdir('pics')
-  homies.remove('amogus')
-  homies.remove('hbk')
+  try:
+    homies.remove('amogus')
+    homies.remove('hbk')
+  except ValueError as err:
+    print(f"ValueError: {err}") 
   if homie == "":
     i = random.randint(0,len(homies)-1)
     folder = os.path.join('pics', homies[i])
@@ -386,6 +389,12 @@ async def list(ctx, homie=""):
     msg += homie + "\n"
   msg += "```"
   await ctx.send(msg)
+
+@bot.command(name="homir",
+brief="Sends homie pic of mir",
+help="Easy mir spamming for your enjoyment :)")
+async def homir(ctx):
+  await homies(ctx, 'mir')
   
 @bot.command(name="addpic",
 brief="Adds a new image to specified folder(s).",
@@ -430,7 +439,7 @@ async def addfolder(ctx, folder=""):
 brief="Removes a folder from pics.",
 help="Removes a folder from pics. (dev only)")
 async def rmfolder(ctx, folder=""):
-  if not (str(ctx.author.id) == keys['MY_ID'] or str(ctx.author.id) == keys['ID_STARBOY']):
+  if not (str(ctx.author.id) == keys['ID_BENNY'] or str(ctx.author.id) == keys['ID_STARBOY']):
     await ctx.send("this command is dev only pleb.")
     return
   if folder == "":
@@ -469,7 +478,7 @@ help="Shows your pp.")
 async def pp(ctx, user=""):
   if user == "":
     user = ctx.message.author.name
-    if ctx.message.author.id == int(keys['ID_STARBOY']) or ctx.message.author.id == int(keys['MY_ID']):
+    if ctx.message.author.id == int(keys['ID_STARBOY']) or ctx.message.author.id == int(keys['ID_BENNY']):
       length = 30
     else:
       length = randint(0, 30)
@@ -478,7 +487,7 @@ async def pp(ctx, user=""):
     user = user.replace(">", "")
     id = user.replace("@", "")
     mem = await bot.fetch_user(id)
-    if mem.id == keys['ID_STARBOY'] or mem.id == keys['MY_ID']:
+    if mem.id == keys['ID_STARBOY'] or mem.id == keys['ID_BENNY']:
       length = 30
     else:
       length = randint(0, 30)
