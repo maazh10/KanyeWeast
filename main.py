@@ -16,13 +16,14 @@ import shutil
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import json
+import unicodedata
 
 f = open('secrets.json')
 keys = json.load(f)
 
 def get_spotify_url(artist: str, song_name: str, album: str):
   sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id = keys['SPOTIFY_CLIENT_ID'] , client_secret = keys['SPOTIFY_CLIENT_SECRET']))
-  results = sp.search(q = f"{song_name}&album:{album}&artist:{artist}", limit=1)
+  results = sp.search(q = unicodedata.normalize("NFKD", f"{song_name}&album:{album}&artist:{artist}"), limit=1)
   return results['tracks']['items'][0]['external_urls']['spotify']
 
 def get_quote():
