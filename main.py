@@ -20,9 +20,9 @@ import json
 f = open('secrets.json')
 keys = json.load(f)
 
-def get_spotify_url(song_name: str):
+def get_spotify_url(artist: str, song_name: str, album: str):
   sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id = keys['SPOTIFY_CLIENT_ID'] , client_secret = keys['SPOTIFY_CLIENT_SECRET']))
-  results = sp.search(q = song_name, limit=1)
+  results = sp.search(q = f"{song_name}&album:{album}&artist:{artist}", limit=1)
   return results['tracks']['items'][0]['external_urls']['spotify']
 
 def get_quote():
@@ -207,7 +207,7 @@ async def bar(ctx):
     embed = discord.Embed(title=lyric["song_name"], url = lyric["song_url"], description=lyric["lyric"], color=(lyric["album_color"]) )
     embed.set_thumbnail(url=lyric["album_art"])
     embed.add_field(name="\u200B", value="[{0}]({1})".format(lyric["album_name"], lyric['album_url']), inline=False)
-    embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format(get_spotify_url(lyric["song_name"])), inline=False)
+    embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format(get_spotify_url("Kanye West", lyric["song_name"], lyric["album_name"])), inline=False)
     await ctx.send(embed=embed)
 
 @bot.command(name="weeknd",
@@ -224,7 +224,7 @@ async def weeknd(ctx):
     embed = discord.Embed(title=lyric["song_name"], url = lyric["song_url"], description=lyric["lyric"], color=(lyric["album_color"]) )
     embed.set_thumbnail(url=lyric["album_art"])
     embed.add_field(name="\u200B", value="[{0}]({1})".format(lyric["album_name"], lyric['album_url']), inline=False)
-    embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format(get_spotify_url(f"the weeknd {lyric['song_name']}")), inline=False)
+    embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format("The Weeknd", get_spotify_url(lyric["song_name"], lyric["album_name"])), inline=False)
     # await asyncio.sleep(5)
     # await ctx.guild.me.edit(nick="Kanye Weast")
     await ctx.send(embed=embed)
@@ -238,7 +238,7 @@ async def drake(ctx):
     embed = discord.Embed(title=lyric["song_name"], url = lyric["song_url"], description=lyric["lyric"], color=(lyric["album_color"]) )
     embed.set_thumbnail(url=lyric["album_art"])
     embed.add_field(name="\u200B", value="[{0}]({1})".format(lyric["album_name"], lyric['album_url']), inline=False)
-    embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format(get_spotify_url(lyric["song_name"])), inline=False)
+    embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format(get_spotify_url("Drake", lyric["song_name"], lyric["album_name"])), inline=False)
     await ctx.send(embed=embed)
 
 @bot.command(aliases=["lyric","lyrics"], 
