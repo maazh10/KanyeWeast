@@ -1,3 +1,4 @@
 /pics
 secrets.json
 .DS_Store
+.cache
