@@ -144,24 +144,20 @@ help_command = commands.DefaultHelpCommand(
 
 bot = commands.Bot(command_prefix='&', help_command = help_command, intents=discord.Intents.all())
 
-async def listen():
-  while True:
-    inp = input()
-    inp = inp.split(',')
-    msg = inp[0]
-    cid = int(inp[1])
-    channel = bot.get_channel(cid)
-    if len(inp) == 3:
-      mid = int(inp[2])
-      to_reply = await channel.fetch_message(mid)
-      await to_reply.reply(msg)
-    else:
-      await channel.send(msg)
-
 @bot.event
 async def on_ready():
   print('We have logged in as {0.user}'.format(bot))
-  await listen()
+  inp = input()
+  inp = inp.split(',')
+  msg = inp[0]
+  cid = int(inp[1])
+  channel = bot.get_channel(cid)
+  if len(inp) == 3:
+    mid = int(inp[2])
+    to_reply = await channel.fetch_message(mid)
+    await to_reply.reply(msg)
+  else:
+    await channel.send(msg)
 
 @bot.command()
 async def shutdown(ctx):
