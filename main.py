@@ -1,3 +1,4 @@
+from logging.config import IDENTIFIER
 import discord
 from discord.ext import commands
 import os
@@ -143,9 +144,24 @@ help_command = commands.DefaultHelpCommand(
 
 bot = commands.Bot(command_prefix='&', help_command = help_command, intents=discord.Intents.all())
 
+async def listen():
+  while True:
+    inp = input()
+    inp = inp.split(',')
+    msg = inp[0]
+    cid = int(inp[1])
+    channel = bot.get_channel(cid)
+    if len(inp) == 3:
+      mid = int(inp[2])
+      to_reply = await channel.fetch_message(mid)
+      await to_reply.reply(msg)
+    else:
+      await channel.send(msg)
+
 @bot.event
 async def on_ready():
   print('We have logged in as {0.user}'.format(bot))
+  await listen()
 
 @bot.command()
 async def shutdown(ctx):
@@ -532,26 +548,26 @@ async def on_message_delete(message):
 brief="Snipes last deleted message in channel.",
 help="Retrieves and sends the most recently deleted message in the server.")
 async def snipe(ctx):
-    try:
-        bob_proxy_url, contents,author, channel_name, time = bot.sniped_messages[ctx.guild.id]
-    except:
-        try:
-            contents,author, channel_name, time = bot.sniped_messages[ctx.guild.id]
-        except:
-            await ctx.channel.send("Couldn't find a message to snipe!")
-            return
-    try:
-        pfp_url = author.avatar.url
-        embed = discord.Embed(description=contents , color=get_color(pfp_url), timestamp=time)
-        embed.set_image(url=bob_proxy_url)
-        embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
-        embed.set_footer(text=f"Deleted in : #{channel_name}")
-        await ctx.channel.send(embed=embed)
-    except:
-        pfp_url = author.avatar.url
-        embed = discord.Embed(description=contents , color=get_color(pfp_url), timestamp=time)
-        embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
-        embed.set_footer(text=f"Deleted in : #{channel_name}")
-        await ctx.channel.send(embed=embed) 
+  try:
+      bob_proxy_url, contents,author, channel_name, time = bot.sniped_messages[ctx.guild.id]
+  except:
+      try:
+          contents,author, channel_name, time = bot.sniped_messages[ctx.guild.id]
+      except:
+          await ctx.channel.send("Couldn't find a message to snipe!")
+          return
+  try:
+      pfp_url = author.avatar.url
+      embed = discord.Embed(description=contents , color=get_color(pfp_url), timestamp=time)
+      embed.set_image(url=bob_proxy_url)
+      embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
+      embed.set_footer(text=f"Deleted in : #{channel_name}")
+      await ctx.channel.send(embed=embed)
+  except:
+      pfp_url = author.avatar.url
+      embed = discord.Embed(description=contents , color=get_color(pfp_url), timestamp=time)
+      embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
+      embed.set_footer(text=f"Deleted in : #{channel_name}")
+      await ctx.channel.send(embed=embed) 
 
 bot.run(keys['TOKEN'])
