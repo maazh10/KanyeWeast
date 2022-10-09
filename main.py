@@ -19,6 +19,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import json
 import unicodedata
 import pprint
+import subprocess
 
 f = open('secrets.json')
 keys = json.load(f)
@@ -140,6 +141,14 @@ def donda_date():
         date[i] = date[i].strip()
     return date
 
+################################### "Common functions" ###################################
+
+def is_dev(user: discord.abc.User) -> bool:
+  """Checks if user is dev."""
+  return str(user.id) == keys['ID_BENNY'] or str(user.id) == keys['ID_STARBOY']
+
+##########################################################################################
+
 help_command = commands.DefaultHelpCommand(
     no_category = 'Commands'
 )
@@ -161,19 +170,34 @@ async def on_ready():
   # else:
   #   await channel.send(msg)
 
+
+#################################### "System commands" ###################################
 @bot.command()
-async def shutdown(ctx):
-  if str(ctx.author.id) == keys['ID_BENNY'] or str(ctx.author.id) == keys['ID_STARBOY']:
+async def shutdown(ctx: commands.Context):
+  if is_dev(ctx.author):
     await ctx.send("Shutting down...")
     exit()
+
+# TODO: Needs to check if user is dev, if we need to pull from repo, pull and then restart main.py
+@bot.command(
+  name="restart",
+  brief="Restarts bot, ***Dev use only***",
+  help="Restarts bot, don't use if you're not a dev, will not work."
+)
+async def restart(ctx: commands.Context):
+  if is_dev(ctx.author):
+    await ctx.send("Restarting...")
+    subprocess.call(keys['RUN_BOT'])
+
+##########################################################################################
 
 @bot.command(
   name="hello",
   brief="Says hello",
   help="Says hello to whoever used the `hello` command"
   )
-async def hello(ctx):
-  if str(ctx.author.id) == keys['ID_BENNY'] or str(ctx.author.id) == keys['ID_STARBOY']:
+async def hello(ctx: commands.Context):
+  if is_dev(ctx.author):
     if ctx.message.content.endswith('son'):
         await ctx.send('Hello master!')
     else:
@@ -189,7 +213,7 @@ async def hello(ctx):
   brief="Says whether Donda is out or not",
   help="Says whether Donda is out or not (long version)"
   )
-async def rembr(ctx):
+async def rembr(ctx: commands.Context):
   await ctx.send('i rember <:3736_GalaxyBrainPepe:769650997681061950>')
   embed = discord.Embed()
   embed.description = '[Out 2021](https://music.apple.com/us/album/donda/1583449420)'
@@ -199,7 +223,7 @@ async def rembr(ctx):
   brief="Says a Kanye quote",
   help="Says a Kanye quote using a Kanye quote API"
   )
-async def quote(ctx):
+async def quote(ctx: commands.Context):
   embed = discord.Embed()
   embed.description='[{}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)'.format(get_quote())
   await ctx.send(embed=embed)
@@ -207,7 +231,7 @@ async def quote(ctx):
 @bot.command(name="rick",
 brief="Get Rick'd",
 help="Are you dumb what is there to understand")
-async def rick(ctx):
+async def rick(ctx: commands.Context):
   embed = discord.Embed()
   embed.set_image(url="https://media1.tenor.com/images/3e30fa16b8a79b44185060d0df450009/tenor.gif?itemid=19920902")
   embed.description='Never gonna give you up'
@@ -216,7 +240,7 @@ async def rick(ctx):
 @bot.command(name="bar",
 brief="Says a Kanye lyric",
 help="Says a random Kanye lyric from any of his albums")
-async def bar(ctx):
+async def bar(ctx: commands.Context):
   async with ctx.message.channel.typing():
     lyric = get_lyric("k")
     embed = discord.Embed(title=lyric["song_name"], url = lyric["song_url"], description=lyric["lyric"], color=(lyric["album_color"]) )
@@ -229,7 +253,7 @@ async def bar(ctx):
 brief="Says a lyric from the Weeknd",
 help="Says a random lyric from the Weeknd from any of his albums")
 # async def lyric(ctx, optional_alb=None):
-async def weeknd(ctx):
+async def weeknd(ctx: commands.Context):
   # if optional_alb == None:
   #   lyric = get_lyric("w", "")
   # else:
@@ -247,7 +271,7 @@ async def weeknd(ctx):
 @bot.command(aliases=["drizzy","papi"],
 brief="Says a Drake lyric",
 help="Says a random Drake lyric from any of his albums")
-async def drake(ctx):
+async def drake(ctx: commands.Context):
   async with ctx.message.channel.typing():
     lyric = get_lyric("d")
     embed = discord.Embed(title=lyric["song_name"], url = lyric["song_url"], description=lyric["lyric"], color=(lyric["album_color"]) )
@@ -259,7 +283,7 @@ async def drake(ctx):
 @bot.command(aliases=["lyric","lyrics"], 
 brief="Grabs the lyrics for a given song",
 help="Displays lyrics for the song name given")
-async def getlyrics(ctx):
+async def getlyrics(ctx: commands.Context):
   async with ctx.message.channel.typing():
     i = ctx.message.content.find(' ')
     to_search = ctx.message.content[i+1:]
@@ -287,7 +311,7 @@ async def getlyrics(ctx):
 @bot.command(name="morning",
 brief="Kanye says good morning",
 help="Are you dumb what is there to understand")
-async def morning(ctx):
+async def morning(ctx: commands.Context):
   embed = discord.Embed()
   embed.set_image(url="https://c.tenor.com/p-Eu-N2OuXkAAAAd/kanye-kanye-west.gif")
   await ctx.send(embed=embed)
@@ -295,7 +319,7 @@ async def morning(ctx):
 @bot.command(name="annoy", 
 brief="Annoys mentioned user", 
 help="Pings mentioned user the number of times specified")
-async def annoy(ctx, user = None, num_str = None, opt_str = None):
+async def annoy(ctx: commands.Context, user = None, num_str = None, opt_str = None):
   invalid_num = False
   in_range = True
   invalid_user = user[0] != "<"
@@ -337,7 +361,7 @@ async def annoy(ctx, user = None, num_str = None, opt_str = None):
 @bot.command(name="play",
 brief="Play donda chants",
 help="Plays donda chants in the voice channel user is currently in.")
-async def play(ctx):
+async def play(ctx: commands.Context):
     voice = ctx.author.voice
     if voice:
       voice_channel = voice.channel
@@ -360,7 +384,7 @@ async def play(ctx):
 @bot.command(name="roast",
 brief="Roast user",
 help="Roasts the author or mentioned user.")
-async def roast(ctx, user=None):
+async def roast(ctx: commands.Context, user=None):
   with open("roasts.txt", "r") as f:
     lines = f.readlines()
     i = randint(0,len(lines))
@@ -372,7 +396,7 @@ async def roast(ctx, user=None):
 @bot.command(name="homie",
 brief="Sends homie pics",
 help="Send random homie pic. Use &homie [homie name]. Use &listhomies for a list of names. Picks random homie if no arguement provided.")
-async def homies(ctx, homie=""):
+async def homies(ctx: commands.Context, homie=""):
   homies = os.listdir('pics')
   try:
     homies.remove('amogus')
@@ -396,7 +420,7 @@ async def homies(ctx, homie=""):
 @bot.command(name="listhomies",
 brief="Lists homies",
 help="Prints list of homies currently in our directory for &homie.")
-async def list(ctx, homie=""):
+async def list(ctx: commands.Context, homie=""):
   homies = os.listdir('pics')
   homies.remove('amogus')
   homies.remove('hbk')
@@ -410,19 +434,19 @@ async def list(ctx, homie=""):
 @bot.command(name="homir",
 brief="Sends homie pic of mir",
 help="Easy mir spamming for your enjoyment :)")
-async def homir(ctx):
+async def homir(ctx: commands.Context):
   await homies(ctx, 'mir')
 
 @bot.command(name="homo",
 brief="Sends homie pic of null",
 help="Easy null spamming for your enjoyment :)")
-async def homo(ctx):
+async def homo(ctx: commands.Context):
   await homies(ctx, 'mo')
   
 @bot.command(name="addpic",
 brief="Adds a new image to specified folder(s).",
 help="Add a new image by adding the image as an attatchment and specifying a folder location(s) (homie name) or amogus for sus quotes. &addpic {foldername} {foldername} ... {foldername}")
-async def addpic(ctx, *folders):
+async def addpic(ctx: commands.Context, *folders):
   if not folders:
     await ctx.send("please specify folder(s).")
     return
@@ -448,7 +472,7 @@ async def addpic(ctx, *folders):
 @bot.command(name="addfolder",
 brief="Adds new folder to pics.",
 help="Adds a new folder to be used for &homies.")
-async def addfolder(ctx, folder=""):
+async def addfolder(ctx: commands.Context, folder=""):
   if folder == "":
     await ctx.send("please specify a folder.")
     return
@@ -461,7 +485,7 @@ async def addfolder(ctx, folder=""):
 @bot.command(name="rmfolder",
 brief="Removes a folder from pics.",
 help="Removes a folder from pics. (dev only)")
-async def rmfolder(ctx, folder=""):
+async def rmfolder(ctx: commands.Context, folder=""):
   if not (str(ctx.author.id) == keys['ID_BENNY'] or str(ctx.author.id) == keys['ID_STARBOY']):
     await ctx.send("this command is dev only pleb.")
     return
@@ -477,7 +501,7 @@ async def rmfolder(ctx, folder=""):
 @bot.command(name="amogus",
 brief="Sends sus message from server.",
 help="Sends random sus message from server.")
-async def sus(ctx):
+async def sus(ctx: commands.Context):
   images = os.listdir('pics/amogus')
   i = random.randint(0,len(images)-1)
   await ctx.send(file=discord.File(os.path.join('pics/amogus',images[i])))
@@ -485,7 +509,7 @@ async def sus(ctx):
 @bot.command(name="haram",
 brief="Sends haram accusation.",
 help="Sends random sus message from server.")
-async def haram(ctx):
+async def haram(ctx: commands.Context):
   images = os.listdir('pics/haram')
   i = random.randint(0,len(images)-1)
   await ctx.send(file=discord.File(os.path.join('pics/haram',images[i])))
@@ -493,7 +517,7 @@ async def haram(ctx):
 @bot.command(aliases=["sad"],
 brief="Sends heartbroken quote/image.",
 help="Sends heartbroken quote/image.")
-async def hbk(ctx):
+async def hbk(ctx: commands.Context):
   images = os.listdir('pics/hbk')
   i = random.randint(0,len(images)-1)
   file = discord.File(os.path.join('pics/hbk',images[i]))
@@ -506,7 +530,7 @@ async def hbk(ctx):
 @bot.command(aliases=["penis", "dick", "dagger", "glizzy", "ydd", "cock", "schlong"],
 brief="Shows your pp.",
 help="Shows your pp.")
-async def pp(ctx, user=""):
+async def pp(ctx: commands.Context, user=""):
   if user == "":
     user = ctx.message.author.name
     if ctx.message.author.id == int(keys['ID_STARBOY']) or ctx.message.author.id == int(keys['ID_BENNY']):
@@ -518,7 +542,7 @@ async def pp(ctx, user=""):
     user = user.replace(">", "")
     id = user.replace("@", "")
     mem = await bot.fetch_user(id)
-    if mem.id == keys['ID_STARBOY'] or mem.id == keys['ID_BENNY']:
+    if is_dev(mem): 
       length = 30
     else:
       length = randint(0, 30)
@@ -555,7 +579,7 @@ async def on_message_delete(message):
 @bot.command(name="snipe",
 brief="Snipes last deleted message in channel.",
 help="Retrieves and sends the most recently deleted message in the server.")
-async def snipe(ctx):
+async def snipe(ctx: commands.Context):
   try:
       bob_proxy_url, contents,author, channel_name, time = bot.sniped_messages[ctx.guild.id]
   except:
