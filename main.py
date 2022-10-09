@@ -400,6 +400,7 @@ async def list(ctx, homie=""):
   homies = os.listdir('pics')
   homies.remove('amogus')
   homies.remove('hbk')
+  homies.remove('haram')
   msg = "```\n"
   for homie in homies:
     msg += homie + "\n"
