@@ -17,13 +17,15 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import json
 import unicodedata
+import pprint
 
 f = open('secrets.json')
 keys = json.load(f)
 
 def get_spotify_url(artist: str, song_name: str, album: str):
   sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id = keys['SPOTIFY_CLIENT_ID'] , client_secret = keys['SPOTIFY_CLIENT_SECRET']))
-  results = sp.search(q = unicodedata.normalize("NFKD", f"{song_name}&album:{album}&artist:{artist}"), limit=1)
+  results = sp.search(q = unicodedata.normalize("NFKD", f"{song_name}&album:{album}&artist:{artist}"), limit=5)
+  pprint.pprint(results)
   return results['tracks']['items'][0]['external_urls']['spotify']
 
 def get_quote():
@@ -363,6 +365,7 @@ async def homies(ctx, homie=""):
   try:
     homies.remove('amogus')
     homies.remove('hbk')
+    homies.remove('haram')
   except ValueError as err:
     print(f"ValueError: {err}") 
   if homie == "":
@@ -465,6 +468,14 @@ async def sus(ctx):
   images = os.listdir('pics/amogus')
   i = random.randint(0,len(images)-1)
   await ctx.send(file=discord.File(os.path.join('pics/amogus',images[i])))
+
+@bot.command(name="haram",
+brief="Sends haram accusation.",
+help="Sends random sus message from server.")
+async def haram(ctx):
+  images = os.listdir('pics/haram')
+  i = random.randint(0,len(images)-1)
+  await ctx.send(file=discord.File(os.path.join('pics/haram',images[i])))
 
 @bot.command(aliases=["sad"],
 brief="Sends heartbroken quote/image.",
