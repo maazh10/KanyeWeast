@@ -1,3 +1,4 @@
+from logging.config import IDENTIFIER
 import discord
 from discord.ext import commands
 import os
@@ -148,6 +149,17 @@ bot = commands.Bot(command_prefix='&', help_command = help_command, intents=disc
 @bot.event
 async def on_ready():
   print('We have logged in as {0.user}'.format(bot))
+  # inp = input()
+  # inp = inp.split(',')
+  # msg = inp[0]
+  # cid = int(inp[1])
+  # channel = bot.get_channel(cid)
+  # if len(inp) == 3:
+  #   mid = int(inp[2])
+  #   to_reply = await channel.fetch_message(mid)
+  #   await to_reply.reply(msg)
+  # else:
+  #   await channel.send(msg)
 
 @bot.command()
 async def shutdown(ctx):
@@ -368,7 +380,7 @@ async def homies(ctx, homie=""):
     homies.remove('haram')
   except ValueError as err:
     print(f"ValueError: {err}") 
-  if homie == "":
+  if not homie:
     i = random.randint(0,len(homies)-1)
     folder = os.path.join('pics', homies[i])
   else:
@@ -528,31 +540,41 @@ async def on_message(message):
   if message.author.id == 630492967018430489 and '<:lemean:903117276587376710>' in message.content:
     await message.reply('<:lemean:903117276587376710>')
 
-snipe_message_author = {}
-snipe_message_content = {}
-
+bot.sniped_messages = {}
 @bot.event
 async def on_message_delete(message):
-    snipe_message_author[message.channel.id] = message.author
-    snipe_message_content[message.channel.id] = [message.content]
+    if message.author == bot.user:
+        return
     if message.attachments:
-      snipe_message_content[message.channel.id].append(message.attachments[0])
+        bob = message.attachments[0]
+        bot.sniped_messages[message.guild.id] = (bob.proxy_url, message.content, message.author, message.channel.name, message.created_at)
+    else:
+        bot.sniped_messages[message.guild.id] = (message.content,message.author, message.channel.name, message.created_at)
 
 @bot.command(name="snipe",
 brief="Snipes last deleted message in channel.",
-help="Retrieves and sends the most recently deleted message in the current channel.")
+help="Retrieves and sends the most recently deleted message in the server.")
 async def snipe(ctx):
-    channel = ctx.channel
-    try:
-      pfp_url = snipe_message_author[channel.id].avatar.url
-      em = discord.Embed(description=snipe_message_content[channel.id][0],
-                        color=get_color(pfp_url))
-      em.set_author(name=snipe_message_author[channel.id].name, icon_url=str(pfp_url))
-      if len(snipe_message_content[channel.id]) == 2:
-        em.set_image(url=snipe_message_content[channel.id][1])
-      em.set_footer(text=f"Last deleted message in #{channel.name}")
-      await ctx.send(embed=em)
-    except KeyError:
-      await ctx.send(f"There are no recently deleted messages in #{channel.name}")
+  try:
+      bob_proxy_url, contents,author, channel_name, time = bot.sniped_messages[ctx.guild.id]
+  except:
+      try:
+          contents,author, channel_name, time = bot.sniped_messages[ctx.guild.id]
+      except:
+          await ctx.channel.send("Couldn't find a message to snipe!")
+          return
+  try:
+      pfp_url = author.avatar.url
+      embed = discord.Embed(description=contents , color=get_color(pfp_url), timestamp=time)
+      embed.set_image(url=bob_proxy_url)
+      embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
+      embed.set_footer(text=f"Deleted in : #{channel_name}")
+      await ctx.channel.send(embed=embed)
+  except:
+      pfp_url = author.avatar.url
+      embed = discord.Embed(description=contents , color=get_color(pfp_url), timestamp=time)
+      embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
+      embed.set_footer(text=f"Deleted in : #{channel_name}")
+      await ctx.channel.send(embed=embed) 
 
 bot.run(keys['TOKEN'])
