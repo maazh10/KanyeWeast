@@ -6,19 +6,22 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import json
 from random import randint
 import lyricsgenius
-from colorthief import ColorThief
-import requests
+import unicodedata
+
+from cogs.utils import get_color
 
 # import asyncio
 from asgiref.sync import sync_to_async
 
 class Lyrics(commands.Cog):
 
-    def __init(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
+        with open("secrets.json") as f:
+            self.keys = json.load(f)
 
     def get_spotify_url(self, artist: str, song_name: str, album: str):
-        sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id = keys['SPOTIFY_CLIENT_ID'] , client_secret = keys['SPOTIFY_CLIENT_SECRET']))
+        sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id = self.keys['SPOTIFY_CLIENT_ID'] , client_secret = self.keys['SPOTIFY_CLIENT_SECRET']))
         results = sp.search(q = unicodedata.normalize("NFKD", f"{song_name}&album:{album}&artist:{artist}"), limit=5)
         return results['tracks']['items'][0]['external_urls']['spotify']
 
@@ -93,58 +96,40 @@ class Lyrics(commands.Cog):
             elif lyric[i].isnumeric():
                 lyric = lyric[:i]
         return lyric
-
-    def get_color(self, img_url: str):
-        color_thief = ColorThief(requests.get(img_url, stream=True).raw)
-        dominant_color = color_thief.get_color(quality=1)
-        rgb2hex = lambda r,g,b: f"#{r:02x}{g:02x}{b:02x}"
-        hexa = rgb2hex(dominant_color[0],dominant_color[1],dominant_color[2])
-        hexa = hexa.replace("#","")
-        return int(hexa, 16)
-    
-    def get_song_info(self, to_search: str):
+ 
+    async def get_song_info(self, to_search: str):
         genius = lyricsgenius.Genius(keys['GENIUS_TOKEN'])
         song = genius.search_song(to_search);
         lyrics = self.clean_lyric_footer(song.lyrics)
-        return {"name": song.full_title, "url": song.url, "lyrics": lyrics, "color": self.get_color(song.header_image_thumbnail_url),"thumbnail": song.header_image_thumbnail_url}
+        return {"name": song.full_title, "url": song.url, "lyrics": lyrics, "color": await get_color(song.header_image_thumbnail_url),"thumbnail": song.header_image_thumbnail_url}
+
+    async def send_lyric(self, type: str, ctx: commands.Context):
+        type_dict = {"k": "Kanye West", "w": "The Weeknd", "d": "Drake"}
+        async with ctx.message.channel.typing():
+            lyric = self.get_lyric(type)
+            embed = discord.Embed(title=lyric["song_name"], url = lyric["song_url"], description=lyric["lyric"], color=(lyric["album_color"]) )
+            embed.set_thumbnail(url=lyric["album_art"])
+            embed.add_field(name="\u200B", value="[{0}]({1})".format(lyric["album_name"], lyric['album_url']), inline=False)
+            embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format(self.get_spotify_url(type_dict[type], lyric["song_name"], lyric["album_name"])), inline=False)
+            await ctx.send(embed=embed)
 
     @commands.command(name="bar",
     brief="Says a Kanye lyric",
     help="Says a random Kanye lyric from any of his albums")
     async def bar(self, ctx: commands.Context):
-        async with ctx.message.channel.typing():
-            lyric = await sync_to_async(self.get_lyric)("k")
-            await ctx.send(lyric['lyric'])
-            print(lyric)
-            embed = discord.Embed(title=lyric["song_name"], url = lyric["song_url"], description=lyric["lyric"], color=(lyric["album_color"]) )
-            embed.set_thumbnail(url=lyric["album_art"])
-            embed.add_field(name="\u200B", value="[{0}]({1})".format(lyric["album_name"], lyric['album_url']), inline=False)
-            embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format(self.get_spotify_url("Kanye West", lyric["song_name"], lyric["album_name"])), inline=False)
-            await ctx.send(embed=embed)
+        await self.send_lyric("k", ctx)
 
     @commands.command(name="weeknd",
     brief="Says a lyric from the Weeknd",
     help="Says a random lyric from the Weeknd from any of his albums")
     async def weeknd(self, ctx: commands.Context):
-        async with ctx.message.channel.typing():
-            lyric = self.get_lyric("w")
-            embed = discord.Embed(title=lyric["song_name"], url = lyric["song_url"], description=lyric["lyric"], color=(lyric["album_color"]) )
-            embed.set_thumbnail(url=lyric["album_art"])
-            embed.add_field(name="\u200B", value="[{0}]({1})".format(lyric["album_name"], lyric['album_url']), inline=False)
-            embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format("The Weeknd", self.get_spotify_url("The Weeknd", lyric["song_name"], lyric["album_name"])), inline=False)
-            await ctx.send(embed=embed)
+        await self.send_lyric("w", ctx)
 
     @commands.command(aliases=["drizzy","papi"],
     brief="Says a Drake lyric",
     help="Says a random Drake lyric from any of his albums")
     async def drake(self, ctx: commands.Context):
-        async with ctx.message.channel.typing():
-            lyric = self.get_lyric("d")
-            embed = discord.Embed(title=lyric["song_name"], url = lyric["song_url"], description=lyric["lyric"], color=(lyric["album_color"]) )
-            embed.set_thumbnail(url=lyric["album_art"])
-            embed.add_field(name="\u200B", value="[{0}]({1})".format(lyric["album_name"], lyric['album_url']), inline=False)
-            embed.add_field(name="\u200B", value=":musical_note: [Spotify]({})".format(self.get_spotify_url("Drake", lyric["song_name"], lyric["album_name"])), inline=False)
-            await ctx.send(embed=embed)
+        await self.send_lyric("d", ctx)
 
     @commands.command(aliases=["lyric","lyrics"], 
     brief="Grabs the lyrics for a given song",
@@ -153,7 +138,7 @@ class Lyrics(commands.Cog):
         async with ctx.message.channel.typing():
             i = ctx.message.content.find(' ')
             to_search = ctx.message.content[i+1:]
-            song_info = self.get_song_info(to_search)
+            song_info = await self.get_song_info(to_search)
 
             over_limit = False
             if len(song_info["lyrics"]) <= 4092:

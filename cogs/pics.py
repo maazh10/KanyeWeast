@@ -9,7 +9,6 @@ import shutil
 import string
 
 class Pictures(commands.Cog):
-    # Common functions used throughout
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot

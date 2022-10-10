@@ -5,12 +5,12 @@ import json
 
 from cogs.utils import is_dev
 
-with open('secrets.json') as f:
-    keys = json.load(f)
 
-class DevCog(commands.Cog):
+class DevelopersOnly(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        with open('secrets.json') as f:
+            self.keys = json.load(f)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -30,7 +30,7 @@ class DevCog(commands.Cog):
     async def restart(self, ctx: commands.Context):
         if await is_dev(ctx.author):
             await ctx.send("Restarting...")
-            subprocess.call(keys["RUN_BOT"])
+            subprocess.call(self.keys["RUN_BOT"])
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(DevCog(bot))
+    await bot.add_cog(DevelopersOnly(bot))

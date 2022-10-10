@@ -60,5 +60,13 @@ class Miscellaneous(commands.Cog):
         embed.description='Never gonna give you up'
         await ctx.send(embed=embed, delete_after=8)
 
+    @commands.command(name="morning",
+    brief="Kanye says good morning",
+    help="Are you dumb what is there to understand")
+    async def morning(self, ctx: commands.Context):
+        embed = discord.Embed()
+        embed.set_image(url="https://tenor.com/view/alarm-wake-up-tired-so-gif-24728280.gif")
+        await ctx.send(embed=embed)
+    
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
