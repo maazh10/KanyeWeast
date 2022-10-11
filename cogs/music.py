@@ -7,13 +7,11 @@ import json
 from random import randint
 import lyricsgenius
 import unicodedata
+from asyncio import sleep
 
 from cogs.utils import get_color
 
-# import asyncio
-from asgiref.sync import sync_to_async
-
-class Lyrics(commands.Cog):
+class Music(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -159,5 +157,29 @@ class Lyrics(commands.Cog):
 
         await ctx.send(embed=embed)
 
+
+    @commands.command(name="play",
+    brief="Play donda chants",
+    help="Plays donda chants in the voice channel user is currently in.")
+    async def play(self, ctx: commands.Context):
+        voice = ctx.author.voice
+        if voice:
+            voice_channel = voice.channel
+            vc = await voice_channel.connect()
+            vc.play(discord.FFmpegPCMAudio("play.mp3"))
+            song_info = self.get_song_info("Donda Chant")
+            embed = discord.Embed(
+                title=song_info["name"], 
+                url=song_info["url"], 
+                description=song_info["lyrics"],
+                color=song_info["color"])
+            embed.set_thumbnail(url=song_info["thumbnail"])
+            await ctx.send(embed=embed)
+            while vc.is_playing():
+                await sleep(.1)
+            await vc.disconnect()
+        else:
+            await ctx.send("You are not in a voice channel pleb.")        
+
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Lyrics(bot))
+    await bot.add_cog(Music(bot))
