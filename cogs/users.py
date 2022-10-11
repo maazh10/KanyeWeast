@@ -6,6 +6,7 @@ from random import randint
 import asyncio
 
 class Users(commands.Cog):
+    """This category has all commands where you can mention users."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot

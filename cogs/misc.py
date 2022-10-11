@@ -6,6 +6,8 @@ import requests
 import json
 
 class Miscellaneous(commands.Cog):
+    """Rando stuff."""
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 

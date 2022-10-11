@@ -9,6 +9,7 @@ import shutil
 import string
 
 class Pictures(commands.Cog):
+    """All your pic related commands lie here."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot

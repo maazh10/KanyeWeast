@@ -12,6 +12,7 @@ from asyncio import sleep
 from cogs.utils import get_color
 
 class Music(commands.Cog):
+    """This category has all music related commands."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot

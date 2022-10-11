@@ -7,6 +7,8 @@ from cogs.utils import is_dev
 
 
 class DevelopersOnly(commands.Cog):
+    """This category is only for dev use. If you're not a dev and try to use you could be banned."""
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         with open('secrets.json') as f:
