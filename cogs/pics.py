@@ -12,7 +12,7 @@ class Pictures(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.pics_directory = "../pics"
+        self.pics_directory = "pics"
 
     @commands.command(name="homie",
     brief="Sends random homie pic",
@@ -42,7 +42,7 @@ class Pictures(commands.Cog):
     brief="Lists homies",
     help="Prints list of homies currently in our directory for &homie.")
     async def list(self, ctx: commands.Context, homie=""):
-        homies = os.listdir('pics')
+        homies = os.listdir(self.pics_directory)
         try:
             homies.remove('amogus')
             homies.remove('hbk')
