@@ -22,7 +22,6 @@ class Music(commands.Cog):
     def get_spotify_url(self, artist: str, song_name: str, album: str):
         sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id = self.keys['SPOTIFY_CLIENT_ID'] , client_secret = self.keys['SPOTIFY_CLIENT_SECRET']))
         results = sp.search(q = unicodedata.normalize("NFKD", f"{song_name}&album:{album}&artist:{artist}"), limit=5)
-        if None == results: return
         return results['tracks']['items'][0]['external_urls']['spotify']
 
     def get_lyric(self, k_or_w_or_d: str):
