@@ -56,7 +56,6 @@ class Miscellaneous(commands.Cog):
         embed.set_author(name="Kanye West", icon_url=pfp_url)
         embed.description='[{}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)'.format(self.get_quote())
         await ctx.send(embed=embed)
-        await ctx.send("Hello")
 
     @commands.command(name="rick",
     brief="Get Rick'd",
