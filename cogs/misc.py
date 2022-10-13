@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from cogs.utils import is_dev
+
+from cogs.utils import is_dev, get_color
 
 import requests
 import json
@@ -50,6 +51,9 @@ class Miscellaneous(commands.Cog):
     )
     async def quote(self, ctx: commands.Context):
         embed = discord.Embed()
+        pfp_url = self.bot.user.avatar.url
+        embed.color = await get_color(pfp_url)
+        embed.set_author(name="Kanye West", icon_url=pfp_url)
         embed.description='[{}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)'.format(self.get_quote())
         await ctx.send(embed=embed)
 
