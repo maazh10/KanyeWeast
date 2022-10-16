@@ -1,3 +1,5 @@
+from curses.ascii import isdigit
+from email import message
 import discord
 from discord.ext import commands
 from cogs.utils import is_dev
@@ -11,6 +13,19 @@ class Users(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def get_user(self, ctx: commands.Context, user: str | None) -> discord.abc.User:
+        if user == None:
+            print("not enough arguments")
+            return ctx.author
+        if ctx.message.mentions:
+            return ctx.message.mentions[0]
+        if user.isdigit():
+            return await self.bot.fetch_user(int(user))
+        else:
+            user = user.replace("<","")
+            user = user.replace(">","")
+            user = user.replace("@","")
+            return await self.bot.fetch_user(int(user))
 
     @commands.command(name="annoy", 
     brief="Annoys mentioned user", 
@@ -80,10 +95,7 @@ class Users(commands.Cog):
             else:
                 length = randint(0, 30)
         else:
-            user = user.replace("<", "")
-            user = user.replace(">", "")
-            id = user.replace("@", "")
-            mem = await self.bot.fetch_user(id)
+            mem = await self.get_user(ctx, user)
             if await is_dev(mem): 
                 length = 30
             else:
