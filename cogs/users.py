@@ -1,4 +1,3 @@
-from email import message
 import discord
 from discord.ext import commands
 from cogs.utils import is_dev

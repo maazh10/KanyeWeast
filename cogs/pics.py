@@ -15,11 +15,30 @@ class Pictures(commands.Cog):
         self.bot = bot
         self.pics_directory = "pics"
 
+    async def get_stats(self, ctx: commands.Context):
+        os.chdir(self.pics_directory)
+        homies = [homie for homie in os.listdir(os.curdir) if not homie.startswith('.')]
+        try:
+            homies.remove('amogus')
+            homies.remove('hbk')
+            homies.remove('haram')
+        except ValueError as err:
+            print(f"ValueError: {err}")
+        msg = "```\n"
+        for homie in homies:
+            msg += f"{homie} {len(os.listdir(homie))}\n"
+        msg += "```"
+        os.chdir('..')
+        await ctx.send(msg)
+
     @commands.command(name="homie",
     brief="Sends random homie pic",
     help="Send random homie pic. Use &homie [homie name]. Use &listhomies for a list of names. Picks random homie if no arguement provided.")
     async def homies(self, ctx: commands.Context, homie=""):
-        homies = os.listdir(self.pics_directory) # not sure how os cd works with cogs as yet
+        if homie == "stats":
+            await self.get_stats(ctx)
+            return
+        homies = os.listdir(self.pics_directory)
         try:
             homies.remove('amogus')
             homies.remove('hbk')
