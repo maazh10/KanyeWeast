@@ -17,7 +17,7 @@ class Pictures(commands.Cog):
 
     async def get_stats(self, ctx: commands.Context):
         os.chdir(self.pics_directory)
-        homies = [(homie, len(os.listdir(homie))) for homie in os.listdir(os.curdir) if not homie.startswith('.') or not 
+        homies = [(homie, len(os.listdir(homie))) for homie in os.listdir(os.curdir) if not homie.startswith('.') or
                     homie != 'amogus' or homie != 'hbk' or homie != 'haram']
         msg = "```\n"
         sorted_homies = sorted(homies, key=lambda d: d[1], reverse=True)
