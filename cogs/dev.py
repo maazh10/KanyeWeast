@@ -40,10 +40,10 @@ class DevelopersOnly(commands.Cog):
         brief="Restarts bot, ***Dev use only***",
         help="Restarts bot, don't use if you're not a dev, will not work.",
     )
+    @commands.is_owner()
     async def restart(self, ctx: commands.Context):
-        if await is_dev(ctx.author):
-            await ctx.send("Restarting...")
-            subprocess.call(self.keys["RUN_BOT"])
+        await ctx.send("Restarting...")
+        subprocess.call(self.keys["RUN_BOT"])
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(DevelopersOnly(bot))
