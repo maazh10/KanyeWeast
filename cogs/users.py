@@ -1,9 +1,23 @@
 import discord
 from discord.ext import commands
+from discord.ext import buttons
 from cogs.utils import is_dev
 
 from random import randint
 import asyncio
+
+class MyPaginator(buttons.Paginator):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @buttons.button(emoji='\u23FA')
+    async def record_button(self, ctx, member):
+        await ctx.send('This button sends a silly message! But could be programmed to do much more.')
+
+    @buttons.button(emoji='my_custom_emoji:1234567890')
+    async def silly_button(self, ctx, member):
+        await ctx.send('Beep boop...')
 
 class Users(commands.Cog):
     """This category has all commands where you can mention users."""
@@ -68,7 +82,6 @@ class Users(commands.Cog):
         await ctx.send("Have a nice day :kissing_heart:")
     
 
-
     @commands.command(name="roast",
     brief="Roast user",
     help="Roasts the author or mentioned user.")
@@ -105,6 +118,12 @@ class Users(commands.Cog):
             penis += "="
         penis += "D\n"
         await ctx.send(penis)
+
+    @commands.command()
+    async def test(self, ctx: commands.Context):
+        pagey = MyPaginator(title='Silly Paginator', colour=0xc67862, embed=True, timeout=90, use_defaults=True,
+                        entries=[1, 2, 3], length=1, format='**')
+        await pagey.start(ctx)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Users(bot))
