@@ -15,7 +15,8 @@ help_command = commands.DefaultHelpCommand(
     no_category = 'Commands'
 )
 
-bot: commands.Bot = commands.Bot(command_prefix='&', help_command = help_command, intents=discord.Intents.all())
+owners = [int(keys['ID_BENNY']), int(keys['ID_STARBOY'])]
+bot: commands.Bot = commands.Bot(command_prefix = '&', help_command = help_command, owners = set(owners), intents = discord.Intents.all())
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -72,7 +73,7 @@ async def load_cogs():
               'cogs.pics',
               'cogs.misc',
               'cogs.music',
-              'cogs.users'
+              # 'cogs.users'
               ]
   for cog in cog_list:
     await bot.load_extension(cog)

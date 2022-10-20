@@ -18,11 +18,22 @@ class DevelopersOnly(commands.Cog):
     async def on_ready(self):
         print(f'We have logged in as {self.bot.user}')
 
+    # @commands.command()
+    # async def shutdown(self, ctx: commands.Context):
+    #     if await is_dev(ctx.author):
+    #         await ctx.send("Shutting down...")
+    #         exit()
+
     @commands.command()
+    @commands.is_owner()
     async def shutdown(self, ctx: commands.Context):
-        if await is_dev(ctx.author):
-            await ctx.send("Shutting down...")
-            exit()
+        await ctx.send("Shutting down...")
+        exit()
+
+    @commands.command()
+    @commands.is_owner()
+    async def test(self, ctx: commands.Context):
+        await ctx.send("Hello dev")
 
     @commands.command(
         name="restart",
