@@ -1,29 +1,52 @@
 import discord
 from discord.ext import commands
-from discord.ext import buttons
-from cogs.utils import is_dev
 
 from random import randint
 import asyncio
 
-class MyPaginator(buttons.Paginator):
+########################################################################
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class Buttons(discord.ui.View):
+    def __init__(self, *, timeout=180):
+        super().__init__(timeout = timeout)
 
-    @buttons.button(emoji='\u23FA')
-    async def record_button(self, ctx, member):
-        await ctx.send('This button sends a silly message! But could be programmed to do much more.')
+    @discord.ui.button(label = "Blurple Button", style = discord.ButtonStyle.blurple) # or .primary
+    async def blurple_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        button.disabled=True
+        await interaction.response.edit_message(view=self)
 
-    @buttons.button(emoji='my_custom_emoji:1234567890')
-    async def silly_button(self, ctx, member):
-        await ctx.send('Beep boop...')
+    @discord.ui.button(label = "Gray Button", style = discord.ButtonStyle.gray) # or .secondary/.grey
+    async def gray_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        button.disabled=True
+        await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label = "Green Button", style = discord.ButtonStyle.green) # or .success
+    async def green_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        button.disabled=True
+        await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(label = "Red Button", style = discord.ButtonStyle.red) # or .danger
+    async def red_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        button.disabled=True
+        await interaction.response.edit_message(view=self)
+
+
+
+########################################################################
 
 class Users(commands.Cog):
     """This category has all commands where you can mention users."""
+    
+    
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    @commands.command(name="button")
+    async def button(self, ctx: commands.Context):
+        view=Buttons()
+        view.add_item(discord.ui.Button(label="URL Button",style=discord.ButtonStyle.link,url="https://github.com/lykn"))
+        await ctx.send("This message has buttons!",view=view)
 
     async def get_user(self, ctx: commands.Context, user: str | None) -> discord.abc.User:
         if user == None:
@@ -101,13 +124,13 @@ class Users(commands.Cog):
     async def pp(self, ctx: commands.Context, user=""):
         if user == "":
             user = ctx.message.author.name
-            if await is_dev(ctx.author):
+            if await self.bot.is_owner(ctx.author):
                 length = 30
             else:
                 length = randint(0, 30)
         else:
             mem = await self.get_user(ctx, user)
-            if await is_dev(mem): 
+            if await self.bot.is_owner(mem): 
                 length = 30
             else:
                 length = randint(0, 30)
@@ -118,12 +141,6 @@ class Users(commands.Cog):
             penis += "="
         penis += "D\n"
         await ctx.send(penis)
-
-    @commands.command()
-    async def test(self, ctx: commands.Context):
-        pagey = MyPaginator(title='Silly Paginator', colour=0xc67862, embed=True, timeout=90, use_defaults=True,
-                        entries=[1, 2, 3], length=1, format='**')
-        await pagey.start(ctx)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Users(bot))

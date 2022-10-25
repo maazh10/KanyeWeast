@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from cogs.utils import is_dev
 
 import os
 import random
@@ -126,7 +125,7 @@ class Pictures(commands.Cog):
     brief="Removes a folder from pics.",
     help="Removes a folder from pics. (dev only)")
     async def rmfolder(self, ctx: commands.Context, folder=""):
-        if not await is_dev(ctx.author):
+        if not self.bot.is_owner(ctx.author):
             await ctx.send("this command is dev only pleb.")
             return
         if folder == "":

@@ -3,9 +3,6 @@ from discord.ext import commands
 import subprocess
 import json
 
-from cogs.utils import is_dev
-
-
 class DevelopersOnly(commands.Cog):
     """This category is only for dev use. If you're not a dev and try to use you could be banned."""
 
@@ -17,12 +14,6 @@ class DevelopersOnly(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print(f'We have logged in as {self.bot.user}')
-
-    # @commands.command()
-    # async def shutdown(self, ctx: commands.Context):
-    #     if await is_dev(ctx.author):
-    #         await ctx.send("Shutting down...")
-    #         exit()
 
     @commands.command()
     @commands.is_owner()

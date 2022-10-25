@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from cogs.utils import is_dev, get_color
+from cogs.utils import get_color
 
 import requests
 import json
@@ -23,7 +23,7 @@ class Miscellaneous(commands.Cog):
     help="Says hello to whoever used the `hello` command"
     )
     async def hello(self, ctx: commands.Context):
-        if await is_dev(ctx.author):
+        if await self.bot.is_owner(ctx.author):
             if ctx.message.content.endswith('son'):
                 await ctx.send('Hello master!')
             else:

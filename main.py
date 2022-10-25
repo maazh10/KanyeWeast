@@ -6,7 +6,7 @@ import asyncio
 from time import sleep
 import json
 
-from cogs.utils import is_dev, get_color
+from cogs.utils import get_color
 
 with open('secrets.json') as f:
   keys = json.load(f)
@@ -16,7 +16,7 @@ help_command = commands.DefaultHelpCommand(
 )
 
 owners = [int(keys['ID_BENNY']), int(keys['ID_STARBOY'])]
-bot: commands.Bot = commands.Bot(command_prefix = '&', help_command = help_command, owners = set(owners), intents = discord.Intents.all())
+bot: commands.Bot = commands.Bot(command_prefix = '&', help_command = help_command, owners = set(owners), intents = discord.Intents.all(), case_insensitive = True)
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -25,7 +25,7 @@ async def on_message(message: discord.Message):
   if message.author.id == bot.user.id:
     return
   res = ["what", "wat", "wht", "wot", "whot", "waht"]
-  if not await is_dev(message.author) and message.content.lower() in res:
+  if not await bot.is_owner(message.author) and message.content.lower() in res:
     await message.reply('smb')
   if message.author.id == 630492967018430489 and '<:lemean:903117276587376710>' in message.content:
     await message.reply('<:lemean:903117276587376710>')
@@ -73,7 +73,7 @@ async def load_cogs():
               'cogs.pics',
               'cogs.misc',
               'cogs.music',
-              # 'cogs.users'
+              'cogs.users'
               ]
   for cog in cog_list:
     await bot.load_extension(cog)
