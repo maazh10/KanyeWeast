@@ -6,6 +6,7 @@ import random
 import requests
 import shutil
 import string
+from pathlib import Path
 
 class Pictures(commands.Cog):
     """All your pic related commands lie here."""
@@ -15,6 +16,7 @@ class Pictures(commands.Cog):
         self.pics_directory = "pics"
 
     async def get_stats(self, ctx: commands.Context):
+        basedir = os.path.abspath(os.curdir)
         os.chdir(self.pics_directory)
         homies = [(homie, len(os.listdir(homie))) for homie in os.listdir(os.curdir) if not (homie.startswith('.') or
                     homie == 'amogus' or homie == 'hbk' or homie == 'haram')]
@@ -23,7 +25,70 @@ class Pictures(commands.Cog):
         for homie in [homie[0] for homie in sorted_homies]:
             msg += f"{homie} {len(os.listdir(homie))}\n"
         msg += "```"
-        os.chdir('..')
+        os.chdir(basedir)
+        await ctx.send(msg)
+
+    @commands.command(name="homienum",
+    brief="Sends nth pic of homie from modification date",
+    help="Use &homienum name [num] to get specific pic, Gets latest pic by default.")
+    async def get_num(self, ctx: commands.Context, name: str = "", num: int = 0):
+        basedir = os.path.abspath(os.curdir)
+        if name == "":
+            await ctx.send("Must provide name.")
+            return
+        os.chdir(os.path.join(self.pics_directory, name))
+        sorted_list = sorted(Path('.').iterdir(), key=lambda f: f.stat().st_ctime, reverse=True)
+        sorted_list = [x for x in sorted_list if not x.parts[-1].startswith('.')]
+        if num != 0 and num > len(sorted_list):
+            await ctx.send("Not a valid number")
+            # TODO: Maybe ask if user wants to mod the number to return something in the future
+            return
+        await ctx.send(file=discord.File(sorted_list[num]), delete_after=5)
+        os.chdir(basedir)
+
+
+    @commands.command(name="homie",
+    brief="Sends random homie pic",
+    help="Send random homie pic. Use &homie [homie name]. Use &listhomies for a list of names. Picks random homie if no arguement provided.")
+    async def homies(self, ctx: commands.Context, homie=""):
+        if homie == "stats":
+            await self.get_stats(ctx)
+            return
+        homies = os.listdir(self.pics_directory)
+        try:
+            homies.remove('amogus')
+            homies.remove('hbk')
+            homies.remove('haram')
+        except ValueError as err:
+            print(f"ValueError: {err}") 
+        if not homie:
+            i = random.randint(0,len(homies)-1)
+            folder = os.path.join('pics', homies[i])
+        else:
+            if homie.lower() in homies:
+                folder = os.path.join('pics', homie.lower())
+            else:
+                await ctx.send("invalid homie")
+                return
+        images = os.listdir(folder)
+        j = random.randint(0,len(images)-1)
+        await ctx.send(file=discord.File(os.path.join(folder,images[j])), delete_after=5)
+
+    @commands.command(name="listhomies",
+    brief="Lists homies",
+    help="Prints list of homies currently in our directory for &homie.")
+    async def list(self, ctx: commands.Context, homie=""):
+        homies = os.listdir(self.pics_directory)
+        try:
+            homies.remove('amogus')
+            homies.remove('hbk')
+            homies.remove('haram')
+        except ValueError as err:
+            print(f"ValueError: {err}")
+        msg = "```\n"
+        for homie in homies:
+            msg += homie + "\n"
+        msg += "```"
         await ctx.send(msg)
 
     @commands.command(name="homie",
