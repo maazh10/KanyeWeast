@@ -39,7 +39,7 @@ class Pictures(commands.Cog):
         os.chdir(os.path.join(self.pics_directory, name))
         sorted_list = sorted(Path('.').iterdir(), key=lambda f: f.stat().st_ctime, reverse=True)
         sorted_list = [x for x in sorted_list if not x.parts[-1].startswith('.')]
-        if num != 0 and num > len(sorted_list):
+        if num != 0 and num >= len(sorted_list):
             await ctx.send("Not a valid number")
             # TODO: Maybe ask if user wants to mod the number to return something in the future
             return
