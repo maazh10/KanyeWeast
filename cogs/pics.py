@@ -1,12 +1,12 @@
 import discord
 from discord.ext import commands
-from cogs.utils import is_dev
 
 import os
 import random
 import requests
 import shutil
 import string
+from pathlib import Path
 
 class Pictures(commands.Cog):
     """All your pic related commands lie here."""
@@ -16,18 +16,35 @@ class Pictures(commands.Cog):
         self.pics_directory = "pics"
 
     async def get_stats(self, ctx: commands.Context):
+        basedir = os.path.abspath(os.curdir)
         os.chdir(self.pics_directory)
-        print(os.path.abspath(os.curdir))
         homies = [(homie, len(os.listdir(homie))) for homie in os.listdir(os.curdir) if not (homie.startswith('.') or
                     homie == 'amogus' or homie == 'hbk' or homie == 'haram')]
-        print(homies)
         msg = "```\n"
         sorted_homies = sorted(homies, key=lambda d: d[1], reverse=True)
         for homie in [homie[0] for homie in sorted_homies]:
             msg += f"{homie} {len(os.listdir(homie))}\n"
         msg += "```"
-        os.chdir('..')
+        os.chdir(basedir)
         await ctx.send(msg)
+
+    @commands.command(name="homienum",
+    brief="Sends nth pic of homie from modification date",
+    help="Use &homienum name [num] to get specific pic, Gets latest pic by default.")
+    async def get_num(self, ctx: commands.Context, name: str = "", num: int = 0):
+        basedir = os.path.abspath(os.curdir)
+        if name == "":
+            await ctx.send("Must provide name.")
+            return
+        os.chdir(os.path.join(self.pics_directory, name))
+        sorted_list = sorted(Path('.').iterdir(), key=lambda f: f.stat().st_ctime, reverse=True)
+        sorted_list = [x for x in sorted_list if not x.parts[-1].startswith('.')]
+        if num != 0 and num > len(sorted_list):
+            await ctx.send("Not a valid number")
+            # TODO: Maybe ask if user wants to mod the number to return something in the future
+            return
+        await ctx.send(file=discord.File(sorted_list[num]), delete_after=5)
+        os.chdir(basedir)
 
     @commands.command(name="homie",
     brief="Sends random homie pic",
@@ -128,7 +145,7 @@ class Pictures(commands.Cog):
     brief="Removes a folder from pics.",
     help="Removes a folder from pics. (dev only)")
     async def rmfolder(self, ctx: commands.Context, folder=""):
-        if not await is_dev(ctx.author):
+        if not self.bot.is_owner(ctx.author):
             await ctx.send("this command is dev only pleb.")
             return
         if folder == "":

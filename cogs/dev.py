@@ -3,9 +3,6 @@ from discord.ext import commands
 import subprocess
 import json
 
-from cogs.utils import is_dev
-
-
 class DevelopersOnly(commands.Cog):
     """This category is only for dev use. If you're not a dev and try to use you could be banned."""
 
@@ -19,20 +16,25 @@ class DevelopersOnly(commands.Cog):
         print(f'We have logged in as {self.bot.user}')
 
     @commands.command()
+    @commands.is_owner()
     async def shutdown(self, ctx: commands.Context):
-        if await is_dev(ctx.author):
-            await ctx.send("Shutting down...")
-            exit()
+        await ctx.send("Shutting down...")
+        exit()
+
+    @commands.command()
+    @commands.is_owner()
+    async def test(self, ctx: commands.Context):
+        await ctx.send("Hello dev")
 
     @commands.command(
         name="restart",
         brief="Restarts bot, ***Dev use only***",
         help="Restarts bot, don't use if you're not a dev, will not work.",
     )
+    @commands.is_owner()
     async def restart(self, ctx: commands.Context):
-        if await is_dev(ctx.author):
-            await ctx.send("Restarting...")
-            subprocess.call(self.keys["RUN_BOT"])
+        await ctx.send("Restarting...")
+        subprocess.call(self.keys["RUN_BOT"])
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(DevelopersOnly(bot))
