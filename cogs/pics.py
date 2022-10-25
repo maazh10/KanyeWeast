@@ -46,51 +46,6 @@ class Pictures(commands.Cog):
         await ctx.send(file=discord.File(sorted_list[num]), delete_after=5)
         os.chdir(basedir)
 
-
-    @commands.command(name="homie",
-    brief="Sends random homie pic",
-    help="Send random homie pic. Use &homie [homie name]. Use &listhomies for a list of names. Picks random homie if no arguement provided.")
-    async def homies(self, ctx: commands.Context, homie=""):
-        if homie == "stats":
-            await self.get_stats(ctx)
-            return
-        homies = os.listdir(self.pics_directory)
-        try:
-            homies.remove('amogus')
-            homies.remove('hbk')
-            homies.remove('haram')
-        except ValueError as err:
-            print(f"ValueError: {err}") 
-        if not homie:
-            i = random.randint(0,len(homies)-1)
-            folder = os.path.join('pics', homies[i])
-        else:
-            if homie.lower() in homies:
-                folder = os.path.join('pics', homie.lower())
-            else:
-                await ctx.send("invalid homie")
-                return
-        images = os.listdir(folder)
-        j = random.randint(0,len(images)-1)
-        await ctx.send(file=discord.File(os.path.join(folder,images[j])), delete_after=5)
-
-    @commands.command(name="listhomies",
-    brief="Lists homies",
-    help="Prints list of homies currently in our directory for &homie.")
-    async def list(self, ctx: commands.Context, homie=""):
-        homies = os.listdir(self.pics_directory)
-        try:
-            homies.remove('amogus')
-            homies.remove('hbk')
-            homies.remove('haram')
-        except ValueError as err:
-            print(f"ValueError: {err}")
-        msg = "```\n"
-        for homie in homies:
-            msg += homie + "\n"
-        msg += "```"
-        await ctx.send(msg)
-
     @commands.command(name="homie",
     brief="Sends random homie pic",
     help="Send random homie pic. Use &homie [homie name]. Use &listhomies for a list of names. Picks random homie if no arguement provided.")
