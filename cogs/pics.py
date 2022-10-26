@@ -1,4 +1,3 @@
-from curses.ascii import isdigit
 import discord
 from discord.ext import commands
 
