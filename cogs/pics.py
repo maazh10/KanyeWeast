@@ -1,3 +1,4 @@
+from curses.ascii import isdigit
 import discord
 from discord.ext import commands
 
@@ -64,7 +65,7 @@ class Pictures(commands.Cog):
         brief="Sends random homie pic",
         help="Send random homie pic. Use &homie [homie name]. Use &listhomies for a list of names. Picks random homie if no arguement provided.",
     )
-    async def homies(self, ctx: commands.Context, homie=""):
+    async def homies(self, ctx: commands.Context, homie="", num=""):
         if homie == "stats":
             await self.get_stats(ctx)
             return
@@ -84,6 +85,9 @@ class Pictures(commands.Cog):
             else:
                 await ctx.send("invalid homie")
                 return
+        if num.isdigit():
+            await self.get_num(ctx, homie, int(num))
+            return
         images = os.listdir(folder)
         j = random.randint(0, len(images) - 1)
         await ctx.send(
