@@ -30,7 +30,7 @@ class Pictures(commands.Cog):
             )
         ]
         msg = "```\n"
-        sorted_homies = sorted(homies, key=lambda d: d[1], reverse=True)
+        sorted_homies = sorted(homies, key=lambda d: d[1])
         for homie in [homie[0] for homie in sorted_homies]:
             msg += f"{homie} {len(os.listdir(homie))}\n"
         msg += "```"
