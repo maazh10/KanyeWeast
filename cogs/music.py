@@ -293,8 +293,8 @@ class Music(commands.Cog):
         help="Plays donda chants in the voice channel user is currently in.",
     )
     async def play(self, ctx: commands.Context):
-        voice = ctx.author.voice
-        if voice:
+        if ctx.author.voice:
+            voice = ctx.author.voice
             voice_channel = voice.channel
             vc = await voice_channel.connect()
             vc.play(discord.FFmpegPCMAudio("play.mp3"))

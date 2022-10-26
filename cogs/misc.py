@@ -55,6 +55,8 @@ class Miscellaneous(commands.Cog):
     )
     async def quote(self, ctx: commands.Context):
         embed = discord.Embed()
+        assert self.bot.user is not None
+        assert self.bot.user.avatar
         pfp_url = self.bot.user.avatar.url
         embed.color = await get_color(pfp_url)
         embed.set_author(name="Kanye West", icon_url=pfp_url)
