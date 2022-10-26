@@ -14,10 +14,10 @@ class Pictures(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.pics_directory = "pics"
+        self.base_directory = os.path.abspath(os.curdir)
+        self.pics_directory = os.path.abspath(os.path.join(os.curdir, "pics"))
 
     async def get_stats(self, ctx: commands.Context):
-        basedir = os.path.abspath(os.curdir)
         os.chdir(self.pics_directory)
         homies = [
             (homie, len(os.listdir(homie)))
@@ -30,11 +30,11 @@ class Pictures(commands.Cog):
             )
         ]
         msg = "```\n"
-        sorted_homies = sorted(homies, key=lambda d: d[1])
+        sorted_homies = sorted(homies, key=lambda d: d[1], reverse=True)
         for homie in [homie[0] for homie in sorted_homies]:
             msg += f"{homie} {len(os.listdir(homie))}\n"
         msg += "```"
-        os.chdir(basedir)
+        os.chdir(self.base_directory)
         await ctx.send(msg)
 
     @commands.command(
@@ -43,21 +43,25 @@ class Pictures(commands.Cog):
         help="Use &homienum name [num] to get specific pic, Gets latest pic by default.",
     )
     async def get_num(self, ctx: commands.Context, name: str = "", num: int = -1):
-        basedir = os.path.abspath(os.curdir)
         if name == "":
             await ctx.send("Must provide name.")
             return
+        if name not in [
+            x
+            for x in os.listdir(self.pics_directory)
+            if not (x.startswith(".") or x == "amogus" or x == "hbk" or x == "haram")
+        ]:
+            await ctx.send("Invalid homie.")
+            return
         os.chdir(os.path.join(self.pics_directory, name))
-        sorted_list = sorted(
-            Path(".").iterdir(), key=lambda f: f.stat().st_ctime
-        )
+        sorted_list = sorted(Path(".").iterdir(), key=lambda f: f.stat().st_ctime)
         sorted_list = [x for x in sorted_list if not x.parts[-1].startswith(".")]
         if num != 0 and num >= len(sorted_list):
             await ctx.send("Not a valid number")
             # TODO: Maybe ask if user wants to mod the number to return something in the future
             return
         await ctx.send(file=discord.File(sorted_list[num]), delete_after=5)
-        os.chdir(basedir)
+        os.chdir(self.base_directory)
 
     @commands.command(
         name="homie",
