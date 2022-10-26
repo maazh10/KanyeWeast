@@ -42,7 +42,7 @@ class Pictures(commands.Cog):
         brief="Sends nth pic of homie from modification date",
         help="Use &homienum name [num] to get specific pic, Gets latest pic by default.",
     )
-    async def get_num(self, ctx: commands.Context, name: str = "", num: int = 0):
+    async def get_num(self, ctx: commands.Context, name: str = "", num: int = -1):
         basedir = os.path.abspath(os.curdir)
         if name == "":
             await ctx.send("Must provide name.")
