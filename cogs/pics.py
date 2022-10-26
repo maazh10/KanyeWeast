@@ -68,6 +68,8 @@ class Pictures(commands.Cog):
         if homie == "stats":
             await self.get_stats(ctx)
             return
+        if homie == "aritzia":
+            homie = "irtiza"
         homies = os.listdir(self.pics_directory)
         try:
             homies.remove("amogus")
