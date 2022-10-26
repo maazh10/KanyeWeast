@@ -123,7 +123,6 @@ class Users(commands.Cog):
         else:
             for i in range(num):
                 sleepnum = randint(0, 30)
-                sleepnum = 0
                 print(f"{sleepnum}, {pinged.display_name}, {num - i}")
                 await asyncio.sleep(sleepnum)
                 await ctx.send(
