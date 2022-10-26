@@ -49,7 +49,7 @@ class Pictures(commands.Cog):
             return
         os.chdir(os.path.join(self.pics_directory, name))
         sorted_list = sorted(
-            Path(".").iterdir(), key=lambda f: f.stat().st_ctime, reverse=True
+            Path(".").iterdir(), key=lambda f: f.stat().st_ctime
         )
         sorted_list = [x for x in sorted_list if not x.parts[-1].startswith(".")]
         if num != 0 and num >= len(sorted_list):
