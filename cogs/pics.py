@@ -69,11 +69,18 @@ class Pictures(commands.Cog):
         help="Send random homie pic. Use &homie [homie name]. Use &listhomies for a list of names. Picks random homie if no arguement provided.",
     )
     async def homies(self, ctx: commands.Context, homie="", num=""):
-        if homie == "stats":
-            await self.get_stats(ctx)
-            return
-        if homie == "aritzia":
-            homie = "irtiza"
+        match homie:
+            case "stats":
+                await self.get_stats(ctx)
+                return
+            case "aritzia":
+                homie = "irtiza"
+            case "list":
+                await self.list(ctx)
+                return
+            case _:
+                pass
+
         homies = os.listdir(self.pics_directory)
         try:
             homies.remove("amogus")
@@ -99,19 +106,17 @@ class Pictures(commands.Cog):
             file=discord.File(os.path.join(folder, images[j])), delete_after=5
         )
 
-    @commands.command(
-        name="listhomies",
-        brief="Lists homies",
-        help="Prints list of homies currently in our directory for &homie.",
-    )
-    async def list(self, ctx: commands.Context, homie=""):
-        homies = os.listdir(self.pics_directory)
-        try:
-            homies.remove("amogus")
-            homies.remove("hbk")
-            homies.remove("haram")
-        except ValueError as err:
-            print(f"ValueError: {err}")
+    async def list(self, ctx: commands.Context):
+        homies = [
+            homie
+            for homie in os.listdir(os.curdir)
+            if not (
+                homie.startswith(".")
+                or homie == "amogus"
+                or homie == "hbk"
+                or homie == "haram"
+            )
+        ]
         msg = "```\n"
         for homie in homies:
             msg += homie + "\n"
@@ -190,7 +195,7 @@ class Pictures(commands.Cog):
         help="Removes a folder from pics. (dev only)",
     )
     async def rmfolder(self, ctx: commands.Context, folder=""):
-        if not self.bot.is_owner(ctx.author):
+        if not await self.bot.is_owner(ctx.author):
             await ctx.send("this command is dev only pleb.")
             return
         if folder == "":
