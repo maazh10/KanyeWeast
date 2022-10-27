@@ -139,10 +139,21 @@ class Pictures(commands.Cog):
     async def homo(self, ctx: commands.Context):
         await self.homies(ctx, "mo")
 
+    async def save_pic(self, name: str, url: str):
+        folder = os.path.join(self.pics_directory, name)
+        img_data = requests.get(url).content
+        img_name = (
+            "".join(random.choices(string.ascii_uppercase + string.digits, k=18))
+            + ".jpg"
+        )
+        path = os.path.join(folder, img_name)
+        with open(path, "wb") as handler:
+            handler.write(img_data)
+
     @commands.command(
         name="addpic",
         brief="Adds a new image to specified folder(s).",
-        help="Add a new image by adding the image as an attatchment and specifying a folder location(s) (homie name) or amogus for sus quotes. &addpic {foldername} {foldername} ... {foldername}",
+        help="Add a new image by adding the image as an attachment and specifying a folder location(s) (homie name) or amogus for sus quotes. &addpic {foldername} {foldername} ... {foldername}",
     )
     async def addpic(self, ctx: commands.Context, *folders):
         if not folders:
@@ -151,28 +162,17 @@ class Pictures(commands.Cog):
         if len(ctx.message.attachments) == 0:
             await ctx.send("attach an image to be added.")
             return
-        if len(ctx.message.attachments) > 1:
-            await ctx.send("too many attachments.")
-            return
         for name in folders:
-            if name not in os.listdir("pics"):
+            if name not in os.listdir(self.pics_directory):
                 await ctx.send(
                     f"folder {name} does not exist. use &addfolder to create."
                 )
             else:
-                folder = os.path.join("pics", name)
-                image_url = ctx.message.attachments[0].url
-                img_data = requests.get(image_url).content
-                img_name = (
-                    "".join(
-                        random.choices(string.ascii_uppercase + string.digits, k=18)
-                    )
-                    + ".jpg"
+                for attachment in ctx.message.attachments:
+                    await self.save_pic(name, attachment.url)
+                await ctx.send(
+                    f"image{'s' * (len(ctx.message.attachments) > 1)} added to {name}."
                 )
-                path = os.path.join(folder, img_name)
-                with open(path, "wb") as handler:
-                    handler.write(img_data)
-                await ctx.send(f"image added to {name}.")
 
     @commands.command(
         name="addfolder",
