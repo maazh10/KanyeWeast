@@ -109,7 +109,7 @@ class Pictures(commands.Cog):
     async def list(self, ctx: commands.Context):
         homies = [
             homie
-            for homie in os.listdir(os.curdir)
+            for homie in os.listdir(self.pics_directory)
             if not (
                 homie.startswith(".")
                 or homie == "amogus"
