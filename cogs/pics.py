@@ -37,11 +37,11 @@ class Pictures(commands.Cog):
         os.chdir(self.base_directory)
         await ctx.send(msg)
 
-    @commands.command(
-        name="homienum",
-        brief="Sends nth pic of homie from modification date",
-        help="Use &homienum name [num] to get specific pic, Gets latest pic by default.",
-    )
+    # @commands.command(
+    #     name="homienum",
+    #     brief="Sends nth pic of homie from modification date",
+    #     help="Use &homienum name [num] to get specific pic, Gets latest pic by default.",
+    # )
     async def get_num(self, ctx: commands.Context, name: str = "", num: int = -1):
         if name == "":
             await ctx.send("Must provide name.")
@@ -80,6 +80,9 @@ class Pictures(commands.Cog):
                 return
             case _:
                 pass
+
+        if num == "latest":
+            num = "-1"
 
         homies = os.listdir(self.pics_directory)
         try:
