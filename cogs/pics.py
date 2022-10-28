@@ -100,7 +100,7 @@ class Pictures(commands.Cog):
             else:
                 await ctx.send("invalid homie")
                 return
-        if num.isdigit():
+        if num.isdigit() or num == "-1":
             await self.get_num(ctx, homie, int(num))
             return
         images = os.listdir(folder)
