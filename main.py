@@ -17,7 +17,7 @@ owners = [int(keys["ID_BENNY"]), int(keys["ID_STARBOY"])]
 bot: commands.Bot = commands.Bot(
     command_prefix="&",
     help_command=help_command,
-    owners=set(owners),
+    owner_ids=set(owners),
     intents=discord.Intents.all(),
     case_insensitive=True,
 )
