@@ -44,7 +44,7 @@ class DevelopersOnly(commands.Cog):
     )
     async def getgit(self, ctx: commands.Context):
         await ctx.send(
-            subprocess.check_output(["git", "log", "-1", "--format=%h %s"])
+            subprocess.check_output(["git", "log", "-1", "--format='%h %s'"])
             .decode("ascii")
             .strip()
         )
@@ -63,7 +63,7 @@ class DevelopersOnly(commands.Cog):
         latest_message = bot_msgs[0] if len(bot_msgs) > 0 else None
         await ctx.message.delete()
         if latest_message:
-            await ctx.send("Deleting latest message", delete_after=5)
+            await ctx.send("Deleting latest message", delete_after=2)
             await latest_message.delete()
         else:
             await ctx.send("Bot hasn't sent a message recently.")
