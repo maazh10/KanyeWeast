@@ -1,3 +1,4 @@
+from urllib.request import HTTPPasswordMgrWithPriorAuth
 import discord
 from discord.ext import commands
 
@@ -66,9 +67,9 @@ class Pictures(commands.Cog):
     @commands.command(
         name="homie",
         brief="Sends random homie pic",
-        help="Send random homie pic. Use &homie [homie name]. Use &listhomies for a list of names. Picks random homie if no arguement provided.",
+        help="Send random homie pic. Use &homie [homie name] [opt]. Use &homie list for a list of names. Or &homie stats for stats on homie pics. Picks random homie if no arguement provided. Use opt to provide specific picture in database, or latest to get latest picture",
     )
-    async def homies(self, ctx: commands.Context, homie="", num=""):
+    async def homies(self, ctx: commands.Context, homie="", opt=""):
         match homie:
             case "stats":
                 await self.get_stats(ctx)
@@ -81,8 +82,8 @@ class Pictures(commands.Cog):
             case _:
                 pass
 
-        if num == "latest":
-            num = "-1"
+        if opt == "latest":
+            opt = "-1"
 
         homies = os.listdir(self.pics_directory)
         try:
@@ -100,8 +101,8 @@ class Pictures(commands.Cog):
             else:
                 await ctx.send("invalid homie")
                 return
-        if num.isdigit() or num == "-1":
-            await self.get_num(ctx, homie, int(num))
+        if opt.isdigit() or opt == "-1":
+            await self.get_num(ctx, homie, int(opt))
             return
         images = os.listdir(folder)
         j = random.randint(0, len(images) - 1)
@@ -131,16 +132,16 @@ class Pictures(commands.Cog):
         brief="Sends homie pic of mir",
         help="Easy mir spamming for your enjoyment :)",
     )
-    async def homir(self, ctx: commands.Context):
-        await self.homies(ctx, "mir")
+    async def homir(self, ctx: commands.Context, opt: str = ""):
+        await self.homies(ctx, "mir", opt)
 
     @commands.command(
         name="homo",
         brief="Sends homie pic of null",
         help="Easy null spamming for your enjoyment :)",
     )
-    async def homo(self, ctx: commands.Context):
-        await self.homies(ctx, "mo")
+    async def homo(self, ctx: commands.Context, opt: str = ""):
+        await self.homies(ctx, "mo", opt)
 
     async def save_pic(self, name: str, url: str):
         folder = os.path.join(self.pics_directory, name)
