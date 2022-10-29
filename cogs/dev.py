@@ -44,7 +44,9 @@ class DevelopersOnly(commands.Cog):
     )
     async def getgit(self, ctx: commands.Context):
         await ctx.send(
-            subprocess.check_output("git log -1 --format=%h %s").decode("ascii").strip()
+            subprocess.check_output(["git", "log", "-1", "--format=%h %s"])
+            .decode("ascii")
+            .strip()
         )
 
     @commands.command(
