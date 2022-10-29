@@ -52,22 +52,49 @@ class DevelopersOnly(commands.Cog):
     @commands.command(
         name="delete",
         brief="Delete bot's latest message.",
-        help="Deletes latest message that bot sent. Only searches 20 messages up.",
+        help="Deletes latest message that bot sent by default. Deletes up to the number provided. Only searches 20 messages up.",
     )
-    async def delete(self, ctx: commands.Context):
+    async def delete(self, ctx: commands.Context, num=1):
         bot_msgs = [
             msg
             async for msg in ctx.channel.history(limit=20)
             if msg.author.id == self.bot.user.id
         ]
-        latest_message = bot_msgs[0] if len(bot_msgs) > 0 else None
         await ctx.message.delete()
-        if latest_message:
-            await ctx.send("Deleting latest message", delete_after=2)
-            await latest_message.delete()
-        else:
-            await ctx.send("Bot hasn't sent a message recently.")
-            return
+        for i in range(num):
+            try:
+                latest_message = bot_msgs.pop(0)
+            except IndexError:
+                latest_message = None
+
+            if latest_message:
+                ordinal = lambda x: [
+                    "1st",
+                    "2nd",
+                    "3rd",
+                    "4th",
+                    "5th",
+                    "6th",
+                    "7th",
+                    "8th",
+                    "9th",
+                    "10th",
+                    "11th",
+                    "12th",
+                    "13th",
+                    "14th",
+                    "15th",
+                    "16th",
+                    "17th",
+                    "18th",
+                    "19th",
+                    "20th",
+                ][x]
+                await ctx.send(f"Deleting {ordinal(i)} latest message.", delete_after=2)
+                await latest_message.delete()
+            else:
+                await ctx.send("Bot hasn't sent a message recently.")
+                return
 
 
 async def setup(bot: commands.Bot):
