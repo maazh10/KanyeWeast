@@ -44,10 +44,27 @@ class DevelopersOnly(commands.Cog):
     )
     async def getgit(self, ctx: commands.Context):
         await ctx.send(
-            subprocess.check_output(["git", "log", "-1", "--format=%h %s"])
-            .decode("ascii")
-            .strip()
+            subprocess.check_output("git log -1 --format=%h %s").decode("ascii").strip()
         )
+
+    @commands.command(
+        name="delete",
+        brief="Delete bot's latest message.",
+        help="Deletes latest message that bot sent. Only searches 20 messages up.",
+    )
+    async def delete(self, ctx: commands.Context):
+        bot_msgs = [
+            msg
+            async for msg in ctx.channel.history(limit=20)
+            if msg.author.id == self.bot.user.id
+        ]
+        latest_message = bot_msgs[0] if len(bot_msgs) > 0 else None
+        if latest_message:
+            await ctx.send("Deleting latest message", delete_after=5)
+            await latest_message.delete()
+        else:
+            await ctx.send("Bot hasn't sent a message recently.")
+            return
 
 
 async def setup(bot: commands.Bot):
