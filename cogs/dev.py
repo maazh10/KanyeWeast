@@ -41,6 +41,7 @@ class DevelopersOnly(commands.Cog):
         name="getgit",
         brief="Gets git info from latest commit.",
         help="Prints commit message and hash of current commit.",
+        aliases=["gitget"],
     )
     async def getgit(self, ctx: commands.Context):
         await ctx.send(
