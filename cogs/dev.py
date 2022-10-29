@@ -59,6 +59,7 @@ class DevelopersOnly(commands.Cog):
             if msg.author.id == self.bot.user.id
         ]
         latest_message = bot_msgs[0] if len(bot_msgs) > 0 else None
+        await ctx.message.delete()
         if latest_message:
             await ctx.send("Deleting latest message", delete_after=5)
             await latest_message.delete()
