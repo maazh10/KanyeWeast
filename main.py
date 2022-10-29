@@ -13,11 +13,11 @@ with open("secrets.json") as f:
 
 help_command = commands.DefaultHelpCommand(no_category="Commands")
 
-owners = [int(keys["ID_BENNY"]), int(keys["ID_STARBOY"])]
+owners = {int(keys["ID_BENNY"]), int(keys["ID_STARBOY"])}
 bot: commands.Bot = commands.Bot(
     command_prefix="&",
     help_command=help_command,
-    owner_ids=set(owners),
+    owner_ids=owners,
     intents=discord.Intents.all(),
     case_insensitive=True,
 )

@@ -12,18 +12,19 @@ class DevelopersOnly(commands.Cog):
         with open("secrets.json") as f:
             self.keys = json.load(f)
 
+    async def cog_check(self, ctx: commands.Context):
+        return await self.bot.is_owner(ctx.author)
+
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"We have logged in as {self.bot.user}")
 
     @commands.command()
-    @commands.is_owner()
     async def shutdown(self, ctx: commands.Context):
         await ctx.send("Shutting down...")
         exit()
 
     @commands.command()
-    @commands.is_owner()
     async def test(self, ctx: commands.Context):
         await ctx.send("Hello dev")
 
@@ -32,10 +33,21 @@ class DevelopersOnly(commands.Cog):
         brief="Restarts bot, ***Dev use only***",
         help="Restarts bot, don't use if you're not a dev, will not work.",
     )
-    @commands.is_owner()
     async def restart(self, ctx: commands.Context):
         await ctx.send("Restarting...")
         subprocess.call(self.keys["RUN_BOT"])
+
+    @commands.command(
+        name="getgit",
+        brief="Gets git info from latest commit.",
+        help="Prints commit message and hash of current commit.",
+    )
+    async def getgit(self, ctx: commands.Context):
+        await ctx.send(
+            subprocess.check_output(["git", "log", "-1", "--format=%h %s"])
+            .decode("ascii")
+            .strip()
+        )
 
 
 async def setup(bot: commands.Bot):
