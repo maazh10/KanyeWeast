@@ -1,3 +1,5 @@
+from dis import disco
+import typing
 import discord
 from discord.ext import commands
 
@@ -38,7 +40,8 @@ class Buttons(discord.ui.View):
         button.disabled = True
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label="Red Button", style=discord.ButtonStyle.red)  # or .danger
+    # or .danger
+    @discord.ui.button(label="Red Button", style=discord.ButtonStyle.red)
     async def red_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
@@ -143,20 +146,18 @@ class Users(commands.Cog):
         await ctx.send(f"{pinged.mention}. {lines[i]}")
 
     @commands.command(
-        aliases=["penis", "dick", "dagger", "glizzy", "ydd", "cock", "schlong"],
+        aliases=["penis", "dick", "dagger",
+                 "glizzy", "ydd", "cock", "schlong"],
         brief="Shows your pp.",
         help="Shows your pp.",
     )
-    async def pp(self, ctx: commands.Context, user=""):
+    async def pp(self, ctx: commands.Context, user: typing.Union[discord.Member, None] = None):
+        name = ctx.author.display_name
         if user:
-            mem = await self.get_user(ctx, user)
-            user = mem.name
-        else:
-            mem = ctx.author
-            user = ctx.message.author.name
-        length = 30 if await self.bot.is_owner(mem) else randint(0, 30)
+            name = user.display_name
+        length = 30 if await self.bot.is_owner(ctx.author) else randint(0, 30)
 
-        penis = f"**{user}'s penis:**\n8{'=' * length}D"
+        penis = f"**{name}'s penis:**\n8{'=' * length}D"
         await ctx.send(penis)
 
 
