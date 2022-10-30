@@ -1,10 +1,7 @@
 import discord
 from discord.ext import commands
 import json
-from random import randint
 import asyncio
-from time import sleep
-import json
 
 from cogs.utils import get_color
 
@@ -87,7 +84,8 @@ async def snipe(ctx: commands.Context):
             description=contents, color=await get_color(pfp_url), timestamp=time
         )
         embed.set_image(url=bob_proxy_url)
-        embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
+        embed.set_author(
+            name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
         embed.set_footer(text=f"Deleted in : #{channel_name}")
         await ctx.channel.send(embed=embed)
     except:
@@ -95,14 +93,16 @@ async def snipe(ctx: commands.Context):
         embed = discord.Embed(
             description=contents, color=await get_color(pfp_url), timestamp=time
         )
-        embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
+        embed.set_author(
+            name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
         embed.set_footer(text=f"Deleted in : #{channel_name}")
         await ctx.channel.send(embed=embed)
 
 
 async def load_cogs():
     """Loads cogs for bot"""
-    cog_list = ["cogs.dev", "cogs.pics", "cogs.misc", "cogs.music", "cogs.users"]
+    cog_list = ["cogs.dev", "cogs.pics",
+                "cogs.misc", "cogs.music", "cogs.users"]
     for cog in cog_list:
         await bot.load_extension(cog)
 

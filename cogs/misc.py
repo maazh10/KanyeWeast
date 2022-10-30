@@ -28,12 +28,12 @@ class Miscellaneous(commands.Cog):
             if ctx.message.content.endswith("son"):
                 await ctx.send("Hello master!")
             else:
-                await ctx.send("Hello " + ctx.author.display_name + "!")
+                await ctx.send(f"Hello {ctx.author.display_name}!")
         else:
             if ctx.message.content.endswith("dad"):
                 await ctx.send("Hello son!")
             else:
-                await ctx.send("Hello " + ctx.author.display_name + "!")
+                await ctx.send(f"Hello {ctx.author.display_name}!")
 
     @commands.command(
         aliases=["donda?", "donda"],
