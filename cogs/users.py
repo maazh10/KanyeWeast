@@ -80,7 +80,10 @@ class Users(commands.Cog):
             user = user.replace("<", "")
             user = user.replace(">", "")
             user = user.replace("@", "")
-            return await self.bot.fetch_user(int(user))
+            try:
+                return await self.bot.fetch_user(int(user))
+            finally:
+                return ctx.author
 
     @commands.command(
         name="annoy",
@@ -152,10 +155,10 @@ class Users(commands.Cog):
     async def pp(self, ctx: commands.Context, user=""):
         if user:
             mem = await self.get_user(ctx, user)
-            user = mem.name
+            user = mem.display_name
         else:
             mem = ctx.author
-            user = ctx.message.author.name
+            user = ctx.message.author.display_name
         length = 30 if await self.bot.is_owner(mem) else randint(0, 30)
 
         penis = f"**{user}'s penis:**\n8{'=' * length}D"
