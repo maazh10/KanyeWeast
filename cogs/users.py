@@ -1,5 +1,3 @@
-from dis import disco
-import typing
 import discord
 from discord.ext import commands
 
@@ -92,12 +90,13 @@ class Users(commands.Cog):
     async def annoy(
         self,
         ctx: commands.Context,
-        user: discord.Member = commands.param(default=lambda ctx: ctx.author),
+        user: str = "",
         num_str: str = "",
         opt_str: str = "",
     ):
         invalid_num = False
         in_range = True
+        invalid_user = user[0] != "<"
         num = 1
         pinged = None
         flag = False
@@ -107,25 +106,28 @@ class Users(commands.Cog):
             num = int(num_str)
             in_range = num >= 0 and num <= 69
 
-        if user == ctx.author or invalid_num or not in_range:
+        pinged = await self.get_user(ctx, user)
+
+        if invalid_user or invalid_num or not in_range:
             await ctx.send(
                 "Specified number of times is too annoying or invalid or invalid user <:Pepepunch:794437891648520224>"
             )
             num = 5
+            pinged = await self.bot.fetch_user(ctx.author.id)
 
         annoy_string = (
             opt_str if opt_str else "get annoyed <:Pepepunch:794437891648520224>"
         )
         if num == 1:
             await asyncio.sleep(randint(0, 30))
-            await ctx.send(f"{user.mention} {annoy_string}")
+            await ctx.send(f"{pinged.mention} {annoy_string}")
         else:
             for i in range(num):
                 sleepnum = randint(0, 30)
-                print(f"{sleepnum}, {user.display_name}, {num - i}")
+                print(f"{sleepnum}, {pinged.display_name}, {num - i}")
                 await asyncio.sleep(sleepnum)
                 await ctx.send(
-                    f"{user.mention} {annoy_string} {num - i}",
+                    f"{pinged.mention} {annoy_string} {num - i}",
                     delete_after=10,
                 )
         await ctx.send("Have a nice day :kissing_heart:")
@@ -133,12 +135,13 @@ class Users(commands.Cog):
     @commands.command(
         name="roast", brief="Roast user", help="Roasts the author or mentioned user."
     )
-    async def roast(self, ctx: commands.Context, user: discord.Member = commands.param(default=lambda ctx: ctx.author)):
+    async def roast(self, ctx: commands.Context, user: str = ""):
         with open("roasts.txt", "r") as f:
             lines = f.readlines()
             i = randint(0, len(lines))
 
-        await ctx.send(f"{user.mention}. {lines[i]}")
+        pinged = await self.get_user(ctx, user)
+        await ctx.send(f"{pinged.mention}. {lines[i]}")
 
     @commands.command(
         aliases=["penis", "dick", "dagger",
@@ -146,11 +149,16 @@ class Users(commands.Cog):
         brief="Shows your pp.",
         help="Shows your pp.",
     )
-    async def pp(self, ctx: commands.Context, user: discord.Member = commands.param(default=lambda ctx: ctx.author)):
-        name = user.display_name
-        length = 30 if await self.bot.is_owner(ctx.author) else randint(0, 30)
+    async def pp(self, ctx: commands.Context, user=""):
+        if user:
+            mem = await self.get_user(ctx, user)
+            user = mem.name
+        else:
+            mem = ctx.author
+            user = ctx.message.author.name
+        length = 30 if await self.bot.is_owner(mem) else randint(0, 30)
 
-        penis = f"**{name}'s penis:**\n8{'=' * length}D"
+        penis = f"**{user}'s penis:**\n8{'=' * length}D"
         await ctx.send(penis)
 
 
