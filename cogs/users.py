@@ -38,7 +38,8 @@ class Buttons(discord.ui.View):
         button.disabled = True
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label="Red Button", style=discord.ButtonStyle.red)  # or .danger
+    # or .danger
+    @discord.ui.button(label="Red Button", style=discord.ButtonStyle.red)
     async def red_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
@@ -143,7 +144,8 @@ class Users(commands.Cog):
         await ctx.send(f"{pinged.mention}. {lines[i]}")
 
     @commands.command(
-        aliases=["penis", "dick", "dagger", "glizzy", "ydd", "cock", "schlong"],
+        aliases=["penis", "dick", "dagger",
+                 "glizzy", "ydd", "cock", "schlong"],
         brief="Shows your pp.",
         help="Shows your pp.",
     )
