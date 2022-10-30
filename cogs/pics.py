@@ -181,9 +181,12 @@ class Pictures(commands.Cog):
     @commands.command(
         name="addfolder",
         brief="Adds new folder to pics.",
-        help="Adds a new folder to be used for &homies.",
+        help="Adds a new folder to be used for &homies. (dev only)",
     )
     async def addfolder(self, ctx: commands.Context, folder=""):
+        if not await self.bot.is_owner(ctx.author):
+            await ctx.send("this command is dev only pleb.")
+            return
         if folder == "":
             await ctx.send("please specify a folder.")
             return
