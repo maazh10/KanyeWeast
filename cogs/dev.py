@@ -54,7 +54,7 @@ class DevelopersOnly(commands.Cog):
         brief="Delete bot's latest message.",
         help="Deletes latest message that bot sent by default. Deletes up to the number provided. Only searches 20 messages up.",
     )
-    async def delete(self, ctx: commands.Context, num=1):
+    async def delete(self, ctx: commands.Context, num: commands.Range[int, 0, 20] = 1):
         bot_msgs = [
             msg
             async for msg in ctx.channel.history(limit=20)
@@ -85,6 +85,7 @@ class DevelopersOnly(commands.Cog):
             "19th",
             "20th",
         ][x]
+
         for i in range(num):
             try:
                 latest_message = bot_msgs.pop(0)
