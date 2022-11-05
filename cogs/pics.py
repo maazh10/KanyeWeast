@@ -55,14 +55,27 @@ class Pictures(commands.Cog):
             await ctx.send("Invalid homie.")
             return
         os.chdir(os.path.join(self.pics_directory, name))
-        sorted_list = sorted(Path(".").iterdir(), key=lambda f: f.stat().st_ctime)
-        sorted_list = [x for x in sorted_list if not x.parts[-1].startswith(".")]
+        sorted_list = sorted(Path(".").iterdir(),
+                             key=lambda f: f.stat().st_ctime)
+        sorted_list = [
+            x for x in sorted_list if not x.parts[-1].startswith(".")]
         if num != 0 and num >= len(sorted_list):
             await ctx.send("Not a valid number")
             # TODO: Maybe ask if user wants to mod the number to return something in the future
             return
         await ctx.send(file=discord.File(sorted_list[num]), delete_after=5)
         os.chdir(self.base_directory)
+
+    async def get_homie_stat(self, ctx: commands.Context, name: str):
+        if name not in [
+            x
+            for x in os.listdir(self.pics_directory)
+            if not (x.startswith(".") or x == "amogus" or x == "hbk" or x == "haram")
+        ]:
+            await ctx.send("Invalid homie.")
+            return
+        msg = f"```{name} {len(os.listdir(os.path.join(self.pics_directory, name)))}```"
+        await ctx.send(msg)
 
     @commands.command(
         name="homie",
@@ -85,33 +98,37 @@ class Pictures(commands.Cog):
         if opt == "latest":
             opt = "-1"
 
+        if opt == "stats":
+            await self.get_homie_stat(ctx, homie)
+            return
+
         homies = os.listdir(self.pics_directory)
         try:
-            homies.remove("amogus")
+            homies.remove("amogus"s
             homies.remove("hbk")
             homies.remove("haram")
         except ValueError as err:
             print(f"ValueError: {err}")
         if not homie:
-            i = random.randint(0, len(homies) - 1)
-            folder = os.path.join("pics", homies[i])
+            i=random.randint(0, len(homies) - 1)
+            folder=os.path.join("pics", homies[i])
         else:
             if homie.lower() in homies:
-                folder = os.path.join("pics", homie.lower())
+                folder=os.path.join("pics", homie.lower())
             else:
                 await ctx.send("invalid homie")
                 return
         if opt.isdigit() or opt == "-1":
             await self.get_num(ctx, homie, int(opt))
             return
-        images = os.listdir(folder)
-        j = random.randint(0, len(images) - 1)
+        images=os.listdir(folder)
+        j=random.randint(0, len(images) - 1)
         await ctx.send(
             file=discord.File(os.path.join(folder, images[j])), delete_after=5
         )
 
     async def list(self, ctx: commands.Context):
-        homies = [
+        homies=[
             homie
             for homie in os.listdir(self.pics_directory)
             if not (
@@ -121,40 +138,40 @@ class Pictures(commands.Cog):
                 or homie == "haram"
             )
         ]
-        msg = "```\n"
+        msg="```\n"
         for homie in homies:
             msg += homie + "\n"
         msg += "```"
         await ctx.send(msg)
 
-    @commands.command(
+    @ commands.command(
         name="homir",
         brief="Sends homie pic of mir",
         help="Easy mir spamming for your enjoyment :)",
     )
-    async def homir(self, ctx: commands.Context, opt: str = ""):
+    async def homir(self, ctx: commands.Context, opt: str=""):
         await self.homies(ctx, "mir", opt)
 
-    @commands.command(
+    @ commands.command(
         name="homo",
         brief="Sends homie pic of null",
         help="Easy null spamming for your enjoyment :)",
     )
-    async def homo(self, ctx: commands.Context, opt: str = ""):
+    async def homo(self, ctx: commands.Context, opt: str=""):
         await self.homies(ctx, "mo", opt)
 
     async def save_pic(self, name: str, url: str):
-        folder = os.path.join(self.pics_directory, name)
-        img_data = requests.get(url).content
-        img_name = (
+        folder=os.path.join(self.pics_directory, name)
+        img_data=requests.get(url).content
+        img_name=(
             "".join(random.choices(string.ascii_uppercase + string.digits, k=18))
             + ".jpg"
         )
-        path = os.path.join(folder, img_name)
+        path=os.path.join(folder, img_name)
         with open(path, "wb") as handler:
             handler.write(img_data)
 
-    @commands.command(
+    @ commands.command(
         name="addpic",
         brief="Adds a new image to specified folder(s).",
         help="Add a new image by adding the image as an attachment and specifying a folder location(s) (homie name) or amogus for sus quotes. &addpic {foldername} {foldername} ... {foldername}",
@@ -178,7 +195,7 @@ class Pictures(commands.Cog):
                     f"image{'s' * (len(ctx.message.attachments) > 1)} added to {name}."
                 )
 
-    @commands.command(
+    @ commands.command(
         name="addfolder",
         brief="Adds new folder to pics.",
         help="Adds a new folder to be used for &homies. (dev only)",
@@ -196,7 +213,7 @@ class Pictures(commands.Cog):
         os.mkdir(os.path.join("pics", folder))
         await ctx.send(f"folder {folder} added. use &addpic {folder} to add images.")
 
-    @commands.command(
+    @ commands.command(
         name="rmfolder",
         brief="Removes a folder from pics.",
         help="Removes a folder from pics. (dev only)",
@@ -217,36 +234,36 @@ class Pictures(commands.Cog):
             return
         await ctx.send(f"folder {folder} not removed beacuse it's non-empty.")
 
-    @commands.command(
+    @ commands.command(
         name="amogus",
         brief="Sends sus message from server.",
         help="Sends random sus message from server.",
     )
     async def sus(self, ctx: commands.Context):
-        images = os.listdir("pics/amogus")
-        i = random.randint(0, len(images) - 1)
+        images=os.listdir("pics/amogus")
+        i=random.randint(0, len(images) - 1)
         await ctx.send(file=discord.File(os.path.join("pics/amogus", images[i])))
 
-    @commands.command(
+    @ commands.command(
         name="haram",
         brief="Sends haram accusation.",
         help="Sends random sus message from server.",
     )
     async def haram(self, ctx: commands.Context):
-        images = os.listdir("pics/haram")
-        i = random.randint(0, len(images) - 1)
+        images=os.listdir("pics/haram")
+        i=random.randint(0, len(images) - 1)
         await ctx.send(file=discord.File(os.path.join("pics/haram", images[i])))
 
-    @commands.command(
+    @ commands.command(
         aliases=["sad"],
         brief="Sends heartbroken quote/image.",
         help="Sends heartbroken quote/image.",
     )
     async def hbk(self, ctx: commands.Context):
-        images = os.listdir("pics/hbk")
-        i = random.randint(0, len(images) - 1)
-        file = discord.File(os.path.join("pics/hbk", images[i]))
-        text = images[i][:-3]
+        images=os.listdir("pics/hbk")
+        i=random.randint(0, len(images) - 1)
+        file=discord.File(os.path.join("pics/hbk", images[i]))
+        text=images[i][:-3]
         if len(text) >= 40:
             await ctx.send(text, file=file)
         else:
