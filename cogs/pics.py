@@ -1,4 +1,3 @@
-from urllib.request import HTTPPasswordMgrWithPriorAuth
 import discord
 from discord.ext import commands
 
