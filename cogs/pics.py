@@ -195,7 +195,7 @@ class Pictures(commands.Cog):
         self.set_homie_list()
         await ctx.send(f"folder {folder} added. use &addpic {folder} to add images.")
 
-    @ commands.command(
+    @commands.command(
         name="rmfolder",
         brief="Removes a folder from pics.",
         help="Removes a folder from pics. (dev only)",
@@ -214,6 +214,7 @@ class Pictures(commands.Cog):
             shutil.rmtree(os.path.join(self.pics_directory, folder))
             await ctx.send(f"folder {folder} removed.")
             return
+        self.set_homie_list()
         await ctx.send(f"folder {folder} not removed beacuse it's non-empty.")
 
     @commands.command(
