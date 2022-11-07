@@ -16,12 +16,12 @@ class Pictures(commands.Cog):
         self.bot = bot
         self.base_directory = os.path.abspath(os.curdir)
         self.pics_directory = os.path.abspath(os.path.join(os.curdir, "pics"))
+        self.set_homie_list()
 
-    async def get_stats(self, ctx: commands.Context):
-        os.chdir(self.pics_directory)
-        homies = [
-            (homie, len(os.listdir(homie)))
-            for homie in os.listdir(os.curdir)
+    def set_homie_list(self):
+        self.homie_list = [
+            homie
+            for homie in os.listdir(self.pics_directory)
             if not (
                 homie.startswith(".")
                 or homie == "amogus"
@@ -29,12 +29,17 @@ class Pictures(commands.Cog):
                 or homie == "haram"
             )
         ]
+
+    async def get_stats(self, ctx: commands.Context):
+        homies = [
+            (homie, len(os.listdir(homie)))
+            for homie in self.homie_list
+        ]
         msg = "```\n"
         sorted_homies = sorted(homies, key=lambda d: d[1], reverse=True)
         for homie in [homie[0] for homie in sorted_homies]:
             msg += f"{homie} {len(os.listdir(homie))}\n"
         msg += "```"
-        os.chdir(self.base_directory)
         await ctx.send(msg)
 
     # @commands.command(
@@ -46,11 +51,7 @@ class Pictures(commands.Cog):
         if name == "":
             await ctx.send("Must provide name.")
             return
-        if name not in [
-            x
-            for x in os.listdir(self.pics_directory)
-            if not (x.startswith(".") or x == "amogus" or x == "hbk" or x == "haram")
-        ]:
+        if name not in self.homie_list:
             await ctx.send("Invalid homie.")
             return
         os.chdir(os.path.join(self.pics_directory, name))
@@ -66,11 +67,7 @@ class Pictures(commands.Cog):
         os.chdir(self.base_directory)
 
     async def get_homie_stat(self, ctx: commands.Context, name: str):
-        if name not in [
-            x
-            for x in os.listdir(self.pics_directory)
-            if not (x.startswith(".") or x == "amogus" or x == "hbk" or x == "haram")
-        ]:
+        if name not in self.homie_list:
             await ctx.send("Invalid homie.")
             return
         msg = f"```{name} {len(os.listdir(os.path.join(self.pics_directory, name)))}```"
@@ -101,19 +98,13 @@ class Pictures(commands.Cog):
             await self.get_homie_stat(ctx, homie)
             return
 
-        homies = os.listdir(self.pics_directory)
-        try:
-            homies.remove("amogus")
-            homies.remove("hbk")
-            homies.remove("haram")
-        except ValueError as err:
-            print(f"ValueError: {err}")
+        homies = self.homie_list
         if not homie:
             i = random.randint(0, len(homies) - 1)
-            folder = os.path.join("pics", homies[i])
+            folder = os.path.join(self.pics_directory, homies[i])
         else:
             if homie.lower() in homies:
-                folder = os.path.join("pics", homie.lower())
+                folder = os.path.join(self.pics_directory, homie.lower())
             else:
                 await ctx.send("invalid homie")
                 return
@@ -127,23 +118,14 @@ class Pictures(commands.Cog):
         )
 
     async def list(self, ctx: commands.Context):
-        homies = [
-            homie
-            for homie in os.listdir(self.pics_directory)
-            if not (
-                homie.startswith(".")
-                or homie == "amogus"
-                or homie == "hbk"
-                or homie == "haram"
-            )
-        ]
+        homies = self.homie_list
         msg = "```\n"
         for homie in homies:
             msg += homie + "\n"
         msg += "```"
         await ctx.send(msg)
 
-    @ commands.command(
+    @commands.command(
         name="homir",
         brief="Sends homie pic of mir",
         help="Easy mir spamming for your enjoyment :)",
@@ -151,7 +133,7 @@ class Pictures(commands.Cog):
     async def homir(self, ctx: commands.Context, opt: str = ""):
         await self.homies(ctx, "mir", opt)
 
-    @ commands.command(
+    @commands.command(
         name="homo",
         brief="Sends homie pic of null",
         help="Easy null spamming for your enjoyment :)",
@@ -170,7 +152,7 @@ class Pictures(commands.Cog):
         with open(path, "wb") as handler:
             handler.write(img_data)
 
-    @ commands.command(
+    @commands.command(
         name="addpic",
         brief="Adds a new image to specified folder(s).",
         help="Add a new image by adding the image as an attachment and specifying a folder location(s) (homie name) or amogus for sus quotes. &addpic {foldername} {foldername} ... {foldername}",
@@ -194,7 +176,7 @@ class Pictures(commands.Cog):
                     f"image{'s' * (len(ctx.message.attachments) > 1)} added to {name}."
                 )
 
-    @ commands.command(
+    @commands.command(
         name="addfolder",
         brief="Adds new folder to pics.",
         help="Adds a new folder to be used for &homies. (dev only)",
@@ -210,9 +192,10 @@ class Pictures(commands.Cog):
             await ctx.send("folder already exists.")
             return
         os.mkdir(os.path.join("pics", folder))
+        self.set_homie_list()
         await ctx.send(f"folder {folder} added. use &addpic {folder} to add images.")
 
-    @ commands.command(
+    @commands.command(
         name="rmfolder",
         brief="Removes a folder from pics.",
         help="Removes a folder from pics. (dev only)",
@@ -224,44 +207,48 @@ class Pictures(commands.Cog):
         if folder == "":
             await ctx.send("please specify a folder.")
             return
-        if folder not in os.listdir("pics"):
+        if folder not in os.listdir(self.pics_directory):
             await ctx.send("folder does not exist.")
             return
-        if len(os.listdir(os.path.join("pics", folder))) == 0:
-            shutil.rmtree(os.path.join("pics", folder))
+        if len(os.listdir(os.path.join(self.pics_directory, folder))) == 0:
+            shutil.rmtree(os.path.join(self.pics_directory, folder))
             await ctx.send(f"folder {folder} removed.")
             return
+        self.set_homie_list()
         await ctx.send(f"folder {folder} not removed beacuse it's non-empty.")
 
-    @ commands.command(
+    @commands.command(
         name="amogus",
         brief="Sends sus message from server.",
         help="Sends random sus message from server.",
     )
     async def sus(self, ctx: commands.Context):
-        images = os.listdir("pics/amogus")
+        amogus_dir = os.path.join(self.pics_directory, "amogus")
+        images = os.listdir(amogus_dir)
         i = random.randint(0, len(images) - 1)
-        await ctx.send(file=discord.File(os.path.join("pics/amogus", images[i])))
+        await ctx.send(file=discord.File(os.path.join(amogus_dir, images[i])))
 
-    @ commands.command(
+    @commands.command(
         name="haram",
         brief="Sends haram accusation.",
         help="Sends random sus message from server.",
     )
     async def haram(self, ctx: commands.Context):
-        images = os.listdir("pics/haram")
+        haram_dir = os.path.join(self.pics_directory, "haram")
+        images = os.listdir(haram_dir)
         i = random.randint(0, len(images) - 1)
-        await ctx.send(file=discord.File(os.path.join("pics/haram", images[i])))
+        await ctx.send(file=discord.File(os.path.join(haram_dir, images[i])))
 
-    @ commands.command(
+    @commands.command(
         aliases=["sad"],
         brief="Sends heartbroken quote/image.",
         help="Sends heartbroken quote/image.",
     )
     async def hbk(self, ctx: commands.Context):
-        images = os.listdir("pics/hbk")
+        hbk_dir = os.path.join(self.pics_directory, "hbk")
+        images = os.listdir(hbk_dir)
         i = random.randint(0, len(images) - 1)
-        file = discord.File(os.path.join("pics/hbk", images[i]))
+        file = discord.File(os.path.join(hbk_dir, images[i]))
         text = images[i][:-3]
         if len(text) >= 40:
             await ctx.send(text, file=file)
