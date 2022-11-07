@@ -212,9 +212,9 @@ class Pictures(commands.Cog):
             return
         if len(os.listdir(os.path.join(self.pics_directory, folder))) == 0:
             shutil.rmtree(os.path.join(self.pics_directory, folder))
+            self.set_homie_list()
             await ctx.send(f"folder {folder} removed.")
             return
-        self.set_homie_list()
         await ctx.send(f"folder {folder} not removed beacuse it's non-empty.")
 
     @commands.command(
