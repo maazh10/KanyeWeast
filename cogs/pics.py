@@ -32,13 +32,13 @@ class Pictures(commands.Cog):
 
     async def get_stats(self, ctx: commands.Context):
         homies = [
-            (homie, len(os.listdir(homie)))
+            (homie, len(os.listdir(os.path.join(self.pics_directory, homie))))
             for homie in self.homie_list
         ]
         msg = "```\n"
         sorted_homies = sorted(homies, key=lambda d: d[1], reverse=True)
-        for homie in [homie[0] for homie in sorted_homies]:
-            msg += f"{homie} {len(os.listdir(homie))}\n"
+        for homie in sorted_homies:
+            msg += f"{homie[0]} {homie[1]}\n"
         msg += "```"
         await ctx.send(msg)
 
