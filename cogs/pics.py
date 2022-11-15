@@ -79,6 +79,7 @@ class Pictures(commands.Cog):
         help="Send random homie pic. Use &homie [homie name] [opt]. Use &homie list for a list of names. Or &homie stats for stats on homie pics. Picks random homie if no arguement provided. Use opt to provide specific picture in database, or latest to get latest picture",
     )
     async def homies(self, ctx: commands.Context, homie="", opt=""):
+        homie = homie.lower()
         match homie:
             case "stats":
                 await self.get_stats(ctx)
