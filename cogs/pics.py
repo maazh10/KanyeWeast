@@ -56,7 +56,7 @@ class Pictures(commands.Cog):
         ]
         msg = "```\n"
         for homie in sorted(homies, key=lambda d: d[1], reverse=True):
-            msg += f"{homie[0]} {homie[1]}\n"
+            msg += f"{homie[0]: <10} {homie[1]: ^4}\n"
         msg += "```"
         await ctx.send(msg)
 
@@ -82,7 +82,7 @@ class Pictures(commands.Cog):
         if name not in self.homie_list:
             await ctx.send("Invalid homie.")
             return
-        msg = f"```{name} {len(self.homie_pics_list[name])}```"
+        msg = f"```{name: <10} {len(self.homie_pics_list[name]) : ^4}```"
         await ctx.send(msg)
 
     async def get_prev_homie(self, ctx: commands.Context):
