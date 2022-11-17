@@ -17,6 +17,16 @@ class Pictures(commands.Cog):
         self.base_directory = os.path.abspath(os.curdir)
         self.pics_directory = os.path.abspath(os.path.join(os.curdir, "pics"))
         self.set_homie_list()
+        self.set_prev_homie("Nothing", "yet :(")
+
+    def sort_homie_pics(self, homie: str) -> list[Path]:
+        os.chdir(os.path.join(self.pics_directory, homie))
+        sorted_list = sorted(Path(".").iterdir(),
+                             key=lambda f: f.stat().st_ctime)
+        os.chdir(self.base_directory)
+        return [
+            x for x in sorted_list if not x.parts[-1].startswith(".")
+        ]
 
     def set_homie_list(self):
         self.homie_list = [
@@ -29,15 +39,20 @@ class Pictures(commands.Cog):
                 or homie == "haram"
             )
         ]
+        self.homie_pics_list = {
+            homie: self.sort_homie_pics(homie)
+            for homie in self.homie_list}
+
+    def set_prev_homie(self, homie: str, j: int | str):
+        self.prev_homie = f"{homie} {j}"
 
     async def get_stats(self, ctx: commands.Context):
         homies = [
-            (homie, len(os.listdir(os.path.join(self.pics_directory, homie))))
+            (homie, len(self.homie_pics_list[homie]))
             for homie in self.homie_list
         ]
         msg = "```\n"
-        sorted_homies = sorted(homies, key=lambda d: d[1], reverse=True)
-        for homie in sorted_homies:
+        for homie in sorted(homies, key=lambda d: d[1], reverse=True):
             msg += f"{homie[0]} {homie[1]}\n"
         msg += "```"
         await ctx.send(msg)
@@ -54,24 +69,21 @@ class Pictures(commands.Cog):
         if name not in self.homie_list:
             await ctx.send("Invalid homie.")
             return
-        os.chdir(os.path.join(self.pics_directory, name))
-        sorted_list = sorted(Path(".").iterdir(),
-                             key=lambda f: f.stat().st_ctime)
-        sorted_list = [
-            x for x in sorted_list if not x.parts[-1].startswith(".")]
-        if num != 0 and num >= len(sorted_list):
+        if num != 0 and num >= len(self.homie_pics_list[name]):
             await ctx.send("Not a valid number")
             # TODO: Maybe ask if user wants to mod the number to return something in the future
             return
-        await ctx.send(file=discord.File(sorted_list[num]), delete_after=5)
-        os.chdir(self.base_directory)
+        await ctx.send(file=discord.File(os.path.join(self.pics_directory, f"{name}/{self.homie_pics_list[name][num]}")), delete_after=5)
 
     async def get_homie_stat(self, ctx: commands.Context, name: str):
         if name not in self.homie_list:
             await ctx.send("Invalid homie.")
             return
-        msg = f"```{name} {len(os.listdir(os.path.join(self.pics_directory, name)))}```"
+        msg = f"```{name} {len(self.homie_pics_list[name])}```"
         await ctx.send(msg)
+
+    async def get_prev_homie(self, ctx: commands.Context):
+        await ctx.send(self.prev_homie, delete_after=5)
 
     @commands.command(
         name="homie",
@@ -89,6 +101,9 @@ class Pictures(commands.Cog):
             case "list":
                 await self.list(ctx)
                 return
+            case "prev":
+                await self.get_prev_homie(ctx)
+                return
             case _:
                 pass
 
@@ -102,20 +117,20 @@ class Pictures(commands.Cog):
         homies = self.homie_list
         if not homie:
             i = random.randint(0, len(homies) - 1)
-            folder = os.path.join(self.pics_directory, homies[i])
+            homie = self.homie_list[i]
         else:
-            if homie.lower() in homies:
-                folder = os.path.join(self.pics_directory, homie.lower())
-            else:
+            if homie not in homies:
                 await ctx.send("invalid homie")
                 return
         if opt.isdigit() or opt == "-1":
             await self.get_num(ctx, homie, int(opt))
             return
-        images = os.listdir(folder)
-        j = random.randint(0, len(images) - 1)
+        j = random.randint(0, len(self.homie_pics_list[homie]) - 1)
+        homie_to_send = os.path.join(
+            self.pics_directory, f"{homie}/{self.homie_pics_list[homie][j]}")
+        self.set_prev_homie(homie, j)
         await ctx.send(
-            file=discord.File(os.path.join(folder, images[j])), delete_after=5
+            file=discord.File(homie_to_send), delete_after=5
         )
 
     async def list(self, ctx: commands.Context):
