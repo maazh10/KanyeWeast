@@ -73,7 +73,7 @@ class Pictures(commands.Cog):
             await ctx.send("Not a valid number")
             # TODO: Maybe ask if user wants to mod the number to return something in the future
             return
-        await ctx.send(file=discord.File(os.path.join(self.pics_directory, f"{name}/{self.homie_pics_list[name][num]}")), delete_after=5)
+        await ctx.send(file=discord.File(os.path.join(self.pics_directory, name, self.homie_pics_list[name][num])), delete_after=5)
 
     async def get_homie_stat(self, ctx: commands.Context, name: str):
         if name not in self.homie_list:
@@ -127,7 +127,7 @@ class Pictures(commands.Cog):
             return
         j = random.randint(0, len(self.homie_pics_list[homie]) - 1)
         homie_to_send = os.path.join(
-            self.pics_directory, f"{homie}/{self.homie_pics_list[homie][j]}")
+            self.pics_directory, homie, self.homie_pics_list[homie][j])
         self.set_prev_homie(homie, j)
         await ctx.send(
             file=discord.File(homie_to_send), delete_after=5
