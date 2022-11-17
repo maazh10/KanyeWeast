@@ -18,6 +18,15 @@ class Pictures(commands.Cog):
         self.pics_directory = os.path.abspath(os.path.join(os.curdir, "pics"))
         self.set_homie_list()
 
+    def sort_homie_pics(self, homie: str) -> list[Path]:
+        os.chdir(os.path.join(self.pics_directory, homie))
+        sorted_list = sorted(Path(".").iterdir(),
+                             key=lambda f: f.stat().st_ctime)
+        os.chdir(self.base_directory)
+        return [
+            x for x in sorted_list if not x.parts[-1].startswith(".")
+        ]
+
     def set_homie_list(self):
         self.homie_list = [
             homie
@@ -29,6 +38,12 @@ class Pictures(commands.Cog):
                 or homie == "haram"
             )
         ]
+        self.homie_pics_list = {
+            homie: self.sort_homie_pics(homie)
+            for homie in self.homie_list}
+
+    def set_prev_homie(self, homie_str: str):
+        self.prev_homie = homie_str
 
     async def get_stats(self, ctx: commands.Context):
         homies = [
@@ -113,8 +128,10 @@ class Pictures(commands.Cog):
             return
         images = os.listdir(folder)
         j = random.randint(0, len(images) - 1)
+        homie_to_send = os.path.join(folder, images[j])
+        self.set_prev_homie(homie_to_send)
         await ctx.send(
-            file=discord.File(os.path.join(folder, images[j])), delete_after=5
+            file=discord.File(homie_to_send), delete_after=5
         )
 
     async def list(self, ctx: commands.Context):
