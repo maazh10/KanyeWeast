@@ -42,8 +42,6 @@ bot.sniped_messages = {}
 
 @bot.event
 async def on_message_delete(message):
-    if message.author == bot.user:
-        return
     if message.attachments:
         bob = message.attachments[0]
         bot.sniped_messages[message.guild.id] = (
