@@ -19,14 +19,17 @@ class Pictures(commands.Cog):
         self.set_homie_list()
         self.set_prev_homie("Nothing", "yet :(")
 
-    def sort_homie_pics(self, homie: str) -> list[Path]:
+    def sort_homie_pics(self, homie: str, update: str = "") -> list[Path]:
         os.chdir(os.path.join(self.pics_directory, homie))
         sorted_list = sorted(Path(".").iterdir(),
                              key=lambda f: f.stat().st_ctime)
         os.chdir(self.base_directory)
-        return [
+        sorted_list = [
             x for x in sorted_list if not x.parts[-1].startswith(".")
         ]
+        if update:
+            self.homie_pics_list[homie] = sorted_list
+        return sorted_list
 
     def set_homie_list(self):
         self.homie_list = [
@@ -167,6 +170,7 @@ class Pictures(commands.Cog):
         path = os.path.join(folder, img_name)
         with open(path, "wb") as handler:
             handler.write(img_data)
+        self.sort_homie_pics(name, "update")
 
     @commands.command(
         name="addpic",
