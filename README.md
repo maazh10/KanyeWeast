@@ -1,5 +1,5 @@
 # KanyeWeast
-Multi-purpose discord bot started as a collaborative project amone university students experimenting with APIs.
+Multi-purpose discord bot started as a collaborative project among university students experimenting with APIs.
 
 ## To get everything up and running:
 - Clone the repo.
