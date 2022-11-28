@@ -32,9 +32,11 @@ async def on_message(message: discord.Message):
         await message.reply("smb")
     if (
         message.author.id == 630492967018430489
-        and "<:lemean:903117276587376710>" in message.content
     ):
-        await message.reply("<:lemean:903117276587376710>")
+        if ("<:lemean:903117276587376710>" in message.content):
+            await message.reply("<:lemean:903117276587376710>")
+        if message.channel.id == 892504507106361394:
+            await message.reply(file=discord.File("irtiza's_L.png"))
 
 
 bot.sniped_messages = {}

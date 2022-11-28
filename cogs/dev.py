@@ -26,6 +26,8 @@ class DevelopersOnly(commands.Cog):
     @commands.command()
     async def test(self, ctx: commands.Context):
         await ctx.send("Hello dev")
+        if (ctx.message.channel.id == 892504507106361394):
+            await ctx.send(f"In {ctx.channel}")
 
     @commands.command(
         name="restart",
@@ -96,7 +98,7 @@ class DevelopersOnly(commands.Cog):
                 await ctx.send(f"Deleting {ordinal(i)} latest message.", delete_after=2)
                 await latest_message.delete()
             else:
-                await ctx.send("Bot hasn't sent a message recently.")
+                await ctx.send("Bot hasn't sent a message recently.", delete_after=2)
                 return
 
 
