@@ -73,11 +73,15 @@ class Pictures(commands.Cog):
         if name not in self.homie_list:
             await ctx.send("Invalid homie.")
             return
-        if num != 0 and num >= len(self.homie_pics_list[name]):
+        try:
+            await ctx.send(file=discord.File(os.path.join(self.pics_directory, name, self.homie_pics_list[name][num])), delete_after=5)
+        except IndexError:
+            if num == len(self.homie_pics_list[name]):
+                await ctx.send("It's zero-indexed bozo")
+                return
             await ctx.send("Not a valid number")
             # TODO: Maybe ask if user wants to mod the number to return something in the future
             return
-        await ctx.send(file=discord.File(os.path.join(self.pics_directory, name, self.homie_pics_list[name][num])), delete_after=5)
 
     async def get_homie_stat(self, ctx: commands.Context, name: str):
         if name not in self.homie_list:
