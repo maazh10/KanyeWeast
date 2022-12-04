@@ -115,12 +115,13 @@ class Pictures(commands.Cog):
             case _:
                 pass
 
-        if opt == "latest":
-            opt = "-1"
+        match opt:
+            case "latest":
+                opt = "-1"
 
-        if opt == "stats":
-            await self.get_homie_stat(ctx, homie)
-            return
+            case "stats":
+                await self.get_homie_stat(ctx, homie)
+                return
 
         homies = self.homie_list
         if not homie:

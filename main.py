@@ -28,12 +28,10 @@ async def on_message(message: discord.Message):
         return
     if message.author.id == bot.user.id:
         return
-    res = ["what", "wat", "wht", "wot", "whot", "waht"]
-    if not await bot.is_owner(message.author) and message.content.lower() in res:
+    what_responses = {"what", "wat", "wht", "wot", "whot", "waht"}
+    if not await bot.is_owner(message.author) and message.content.lower() in what_responses:
         await message.reply("smb")
-    if (
-        message.author.id == 630492967018430489
-    ):
+    if (message.author.id == 630492967018430489):
         if ("<:lemean:903117276587376710>" in message.content):
             await message.reply("<:lemean:903117276587376710>")
         if message.channel.id == 892504507106361394:
@@ -41,9 +39,7 @@ async def on_message(message: discord.Message):
                 await message.reply(file=discord.File("irtiza's_L.png"))
             if (randint(0, 1000) % 7 == 4):
                 await message.reply(file=discord.File("irtiza's_other_L.png"))
-    if (
-        message.author.id == 884764651580162088
-    ):
+    if (message.author.id == 884764651580162088):
         if message.channel.id == 892504507106361394:
             if (randint(0, 1000) % 7 == 0):
                 await message.reply(file=discord.File("mir's_L.png"))
