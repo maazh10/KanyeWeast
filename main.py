@@ -115,9 +115,9 @@ async def load_cogs():
         await bot.load_extension(cog)
 
 
-async def main():
+async def load_cogs_wrapper():
     await load_cogs()
-    await bot.start(keys["TOKEN"])
 
 
-asyncio.run(main())
+asyncio.run(load_cogs_wrapper())
+bot.run(keys["TOKEN"])
