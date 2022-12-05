@@ -204,39 +204,6 @@ class Pictures(commands.Cog):
                     f"image{'s' * (len(ctx.message.attachments) > 1)} added to {name}."
                 )
 
-    # @commands.command(
-    #     name="addpic",
-    #     brief="Adds a new image to specified folder(s).",
-    #     help="Add a new image by adding the image as an attachment and specifying a folder location(s) (homie name) or amogus for sus quotes. &addpic {foldername} {foldername} ... {foldername}",
-    # )
-    # async def addpic(self, ctx: commands.Context, attachments: commands.Greedy[discord.Attachment]):
-    #     # # if not folders:
-    #     #     await ctx.send("please specify folder(s).")
-    #     #     return
-    #     # if len(ctx.message.attachments) == 0:
-    #     #     await ctx.send("attach an image to be added.")
-    #     #     return
-    #     for name in folders:
-    #         if name not in os.listdir(self.pics_directory):
-    #             await ctx.send(
-    #                 f"folder {name} does not exist. use &addfolder to create."
-    #             )
-    #         else:
-    #             for attachment in attachments:
-    #                 await self.save_pic(name, attachment.url)
-    #             await ctx.send(
-    #                 f"image{'s' * (len(attachments) > 1)} added to {name}."
-    #             )
-
-    # @addpic.error
-    # async def addpic_error(self, ctx: commands.Context, error):
-    #     if isinstance(error, commands.MissingRequiredArgument):
-    #         await ctx.send("no folder provided")
-    #     if isinstance(error, commands.MissingRequiredAttachment):
-    #         await ctx.send("no images provided")
-    #     else:
-    #         print(repr(error))
-
     @commands.command(
         name="addfolder",
         brief="Adds new folder to pics.",

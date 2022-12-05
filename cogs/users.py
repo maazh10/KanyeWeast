@@ -5,6 +5,7 @@ from random import randint
 import asyncio
 import sys
 import traceback
+from typing import Annotated
 
 ########################################################################
 
@@ -87,9 +88,9 @@ class Users(commands.Cog):
             finally:
                 return ctx.author
 
-##################################################################################################
-###################################### GLOBAL ERROR HANDLER ######################################
-##################################################################################################
+    ##################################################################################################
+    ###################################### GLOBAL ERROR HANDLER ######################################
+    ##################################################################################################
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error: commands.CommandError):
@@ -139,7 +140,21 @@ class Users(commands.Cog):
             traceback.print_exception(
                 type(error), error, error.__traceback__, file=sys.stderr)
 
-##################################################################################################
+    ##################################################################################################
+    ##################################### CUSTOM USER CONVERTER ######################################
+    ##################################################################################################
+
+    class BennysUserConverter(commands.UserConverter):
+        async def convert(self, ctx, argument) -> discord.abc.User:
+            try:
+                user = await super().convert(ctx, argument)
+                return user
+            except commands.UserNotFound as error:
+                traceback.print_exception(
+                    type(error), error, error.__traceback__, file=sys.stderr)
+                return ctx.author
+
+    ##################################################################################################
 
     async def annoy_logic(self, ctx: commands.Context, user: discord.abc.User, num: int = 1, opt_str: str = ""):
         annoy_string = (
@@ -167,7 +182,7 @@ class Users(commands.Cog):
     async def annoy_parse(
         self,
         ctx: commands.Context,
-        user: discord.User,
+        user: Annotated[discord.User, BennysUserConverter],
         num: commands.Range[int, 0, 69] = 1,
         opt_str: str = "",
     ):
@@ -175,8 +190,6 @@ class Users(commands.Cog):
 
     @annoy_parse.error
     async def annoy_error(self, ctx: commands.Context, e: commands.CommandError):
-        if isinstance(e, commands.UserNotFound):
-            await ctx.send("User not found")
         if isinstance(e, commands.RangeError):
             await ctx.send("Specified number is out of range")
         if isinstance(e, commands.BadArgument):
@@ -189,7 +202,7 @@ class Users(commands.Cog):
     @commands.command(
         name="roast", brief="Roast user", help="Roasts the author or mentioned user."
     )
-    async def roast(self, ctx: commands.Context, user: discord.User = commands.Author):
+    async def roast(self, ctx: commands.Context, user: Annotated[discord.User, BennysUserConverter] = commands.Author):
         with open("roasts.txt", "r") as f:
             lines = f.readlines()
             i = randint(0, len(lines))
@@ -202,7 +215,7 @@ class Users(commands.Cog):
         brief="Shows your pp.",
         help="Shows your pp.",
     )
-    async def pp(self, ctx: commands.Context, user: discord.User = commands.Author):
+    async def pp(self, ctx: commands.Context, user: Annotated[discord.User, BennysUserConverter] = commands.Author):
         length = 30 if await self.bot.is_owner(user) else randint(0, 30)
         penis = f"**{user.display_name}'s penis:**\n8{'=' * length}D"
         await ctx.send(penis)

@@ -1,7 +1,6 @@
 from discord.ext import commands
 import subprocess
 import json
-import discord
 
 
 class DevelopersOnly(commands.Cog):
@@ -23,22 +22,6 @@ class DevelopersOnly(commands.Cog):
     async def shutdown(self, ctx: commands.Context):
         await ctx.send("Shutting down...")
         exit()
-
-    # @commands.command()
-    # async def fruits(interaction: discord.Interaction, fruit: str):
-    #     await interaction.response.send_message(f'Your favourite fruit seems to be {fruit}')
-
-    # @fruits.autocomplete('fruit')
-    # async def fruits_autocomplete(
-    #     interaction: discord.Interaction,
-    #     current: str,
-    # ) -> list[discord.app_commands.Choice[str]]:
-    #     fruits = ['Banana', 'Pineapple', 'Apple',
-    #               'Watermelon', 'Melon', 'Cherry']
-    #     return [
-    #         discord.app_commands.Choice(name=fruit, value=fruit)
-    #         for fruit in fruits if current.lower() in fruit.lower()
-    #     ]
 
     @commands.command(
         name="restart",
