@@ -26,7 +26,7 @@ class Pictures(commands.Cog):
     def sort_homie_pics(self, homie: str, update: str = "") -> list[Path]:
         os.chdir(os.path.join(self.pics_directory, homie))
         sorted_list = sorted(Path(".").iterdir(),
-                             key=lambda f: f.stat().st_birthtime)
+                             key=lambda f: f.stat().st_ctime)
         os.chdir(self.base_directory)
         sorted_list = [
             x for x in sorted_list if not x.parts[-1].startswith(".")
