@@ -9,6 +9,8 @@ import string
 from pathlib import Path
 
 import typing
+import sys
+import traceback
 
 
 class Pictures(commands.Cog):
@@ -24,7 +26,7 @@ class Pictures(commands.Cog):
     def sort_homie_pics(self, homie: str, update: str = "") -> list[Path]:
         os.chdir(os.path.join(self.pics_directory, homie))
         sorted_list = sorted(Path(".").iterdir(),
-                             key=lambda f: f.stat().st_ctime)
+                             key=lambda f: f.stat().st_birthtime)
         os.chdir(self.base_directory)
         sorted_list = [
             x for x in sorted_list if not x.parts[-1].startswith(".")
@@ -180,12 +182,22 @@ class Pictures(commands.Cog):
             handler.write(img_data)
         self.sort_homie_pics(name, "update")
 
+    ##################################################################################################
+    ###################################### CUSTOM STR CONVERTER ######################################
+    ##################################################################################################
+
+    class BennysStrConverter(commands.Converter):
+        async def convert(self, ctx, argument) -> str:
+            return str(argument)
+
+    ##################################################################################################
+
     @commands.command(
         name="addpic",
         brief="Adds a new image to specified folder(s).",
-        help="Add a new image by adding the image as an attachment and specifying a folder location(s) (homie name) or amogus for sus quotes. &addpic {foldername} {foldername} ... {foldername}",
+        help="Add a new image by adding the image as an attachment and specifying a folder location(s) (homie name) or amogus for sus quotes. &addpic {foldername} {foldername} ... {foldername}. Use &homie list to get valid homies.",
     )
-    async def addpic(self, ctx: commands.Context, *folders):
+    async def addpic(self, ctx: commands.Context, folders: commands.Greedy[BennysStrConverter] = commands.parameter(description=": Name of homie to add pic to.")):
         if not folders:
             await ctx.send("please specify folder(s).")
             return
