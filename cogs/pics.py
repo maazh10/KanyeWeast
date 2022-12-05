@@ -8,6 +8,8 @@ import shutil
 import string
 from pathlib import Path
 
+import typing
+
 
 class Pictures(commands.Cog):
     """All your pic related commands lie here."""

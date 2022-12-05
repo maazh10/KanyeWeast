@@ -3,6 +3,9 @@ from discord.ext import commands
 
 from random import randint
 import asyncio
+import sys
+import traceback
+from typing import Annotated
 
 ########################################################################
 
@@ -85,66 +88,126 @@ class Users(commands.Cog):
             finally:
                 return ctx.author
 
-    @commands.command(
-        name="annoy",
-        brief="Annoys mentioned user",
-        help="Pings mentioned user the number of times specified",
-    )
-    async def annoy(
-        self,
-        ctx: commands.Context,
-        user: str = "",
-        num_str: str = "",
-        opt_str: str = "",
-    ):
-        invalid_num = False
-        in_range = True
-        invalid_user = user[0] != "<"
-        num = 1
-        pinged = None
-        flag = False
+    ##################################################################################################
+    ###################################### GLOBAL ERROR HANDLER ######################################
+    ##################################################################################################
 
-        invalid_num = not num_str.isdigit()
-        if not invalid_num:
-            num = int(num_str)
-            in_range = num >= 0 and num <= 69
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error: commands.CommandError):
+        # This prevents any commands with local handlers being handled here in on_command_error.
+        if hasattr(ctx.command, 'on_error'):
+            return
 
-        pinged = await self.get_user(ctx, user)
+        # This prevents any cogs with an overwritten cog_command_error being handled here.
+        cog = ctx.cog
+        if cog:
+            if cog._get_overridden_method(cog.cog_command_error) is not None:
+                return
 
-        if invalid_user or invalid_num or not in_range:
-            await ctx.send(
-                "Specified number of times is too annoying or invalid or invalid user <:Pepepunch:794437891648520224>"
-            )
-            num = 5
-            pinged = await self.bot.fetch_user(ctx.author.id)
+        ignored = ()
 
+        # Allows us to check for original exceptions raised and sent to CommandInvokeError.
+        # If nothing is found. We keep the exception passed to on_command_error.
+        error = getattr(error, 'original', error)
+
+        # Anything in ignored will return and prevent anything happening.
+        if isinstance(error, ignored):
+            return
+
+        if isinstance(error, commands.DisabledCommand):
+            await ctx.send(f'{ctx.command} has been disabled.')
+
+        elif isinstance(error, commands.NoPrivateMessage):
+            try:
+                await ctx.author.send(f'{ctx.command} can not be used in Private Messages.')
+            except discord.HTTPException:
+                pass
+
+        # For this error example we check to see where it came from...
+        elif isinstance(error, commands.BadArgument):
+            await ctx.send("Bad Argument provided.")
+
+        elif isinstance(error, commands.UserNotFound):
+            await ctx.send("No user found. Try again")
+
+        elif isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send("Missing required argument. Try again")
+
+        else:
+            # All other Errors not returned come here. And we can just print the default TraceBack.
+            print('Ignoring exception in command {}:'.format(
+                ctx.command), file=sys.stderr)
+            traceback.print_exception(
+                type(error), error, error.__traceback__, file=sys.stderr)
+
+    ##################################################################################################
+    ##################################### CUSTOM USER CONVERTER ######################################
+    ##################################################################################################
+
+    class BennysUserConverter(commands.UserConverter):
+        async def convert(self, ctx, argument) -> discord.abc.User:
+            try:
+                user = await super().convert(ctx, argument)
+                return user
+            except commands.UserNotFound as error:
+                traceback.print_exception(
+                    type(error), error, error.__traceback__, file=sys.stderr)
+                return ctx.author
+
+    ##################################################################################################
+
+    async def annoy_logic(self, ctx: commands.Context, user: discord.abc.User, num: int = 1, opt_str: str = ""):
         annoy_string = (
             opt_str if opt_str else "get annoyed <:Pepepunch:794437891648520224>"
         )
         if num == 1:
             await asyncio.sleep(randint(0, 30))
-            await ctx.send(f"{pinged.mention} {annoy_string}")
+            await ctx.send(f"{user.mention} {annoy_string}", delete_after=10)
         else:
             for i in range(num):
                 sleepnum = randint(0, 30)
-                print(f"{sleepnum}, {pinged.display_name}, {num - i}")
+                print(f"{sleepnum}, {user.display_name}, {num - i}")
                 await asyncio.sleep(sleepnum)
                 await ctx.send(
-                    f"{pinged.mention} {annoy_string} {num - i}",
+                    f"{user.mention} {annoy_string} {num - i}",
                     delete_after=10,
                 )
         await ctx.send("Have a nice day :kissing_heart:")
 
     @commands.command(
+        name="annoy",
+        brief="Annoys mentioned user",
+        help="Pings mentioned user the number of times specified",
+    )
+    async def annoy_parse(
+        self,
+        ctx: commands.Context,
+        user: Annotated[discord.User, BennysUserConverter],
+        num: commands.Range[int, 0, 69] = 1,
+        opt_str: str = "",
+    ):
+        await self.annoy_logic(ctx, user, num, opt_str)
+
+    @annoy_parse.error
+    async def annoy_error(self, ctx: commands.Context, e: commands.CommandError):
+        if isinstance(e, commands.RangeError):
+            await ctx.send("Specified number is out of range")
+        if isinstance(e, commands.BadArgument):
+            await ctx.send("Argument cannot be converted")
+        print(type(e).__name__, repr(e))
+
+        await ctx.send("Specified number of times is too annoying or invalid or invalid user <:Pepepunch:794437891648520224>")
+        await self.annoy_logic(ctx, ctx.message.author, 5)
+
+    @commands.command(
         name="roast", brief="Roast user", help="Roasts the author or mentioned user."
     )
-    async def roast(self, ctx: commands.Context, user: str = ""):
+    async def roast(self, ctx: commands.Context, user: Annotated[discord.User, BennysUserConverter] = commands.Author):
         with open("roasts.txt", "r") as f:
             lines = f.readlines()
             i = randint(0, len(lines))
 
-        pinged = await self.get_user(ctx, user)
-        await ctx.send(f"{pinged.mention}. {lines[i]}")
+        await ctx.send(f"{user.mention}. {lines[i]}")
 
     @commands.command(
         aliases=["penis", "dick", "dagger",
@@ -152,16 +215,9 @@ class Users(commands.Cog):
         brief="Shows your pp.",
         help="Shows your pp.",
     )
-    async def pp(self, ctx: commands.Context, user=""):
-        if user:
-            mem = await self.get_user(ctx, user)
-            user = mem.display_name
-        else:
-            mem = ctx.author
-            user = ctx.message.author.display_name
-        length = 30 if await self.bot.is_owner(mem) else randint(0, 30)
-
-        penis = f"**{user}'s penis:**\n8{'=' * length}D"
+    async def pp(self, ctx: commands.Context, user: Annotated[discord.User, BennysUserConverter] = commands.Author):
+        length = 30 if await self.bot.is_owner(user) else randint(0, 30)
+        penis = f"**{user.display_name}'s penis:**\n8{'=' * length}D"
         await ctx.send(penis)
 
 

@@ -23,12 +23,6 @@ class DevelopersOnly(commands.Cog):
         await ctx.send("Shutting down...")
         exit()
 
-    @commands.command()
-    async def test(self, ctx: commands.Context):
-        await ctx.send("Hello dev")
-        if (ctx.message.channel.id == 892504507106361394):
-            await ctx.send(f"In {ctx.channel}")
-
     @commands.command(
         name="restart",
         brief="Restarts bot, ***Dev use only***",
