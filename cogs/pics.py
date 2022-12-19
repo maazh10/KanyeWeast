@@ -85,7 +85,7 @@ class Pictures(commands.Cog):
             if num == len(self.homie_pics_list[name]):
                 await ctx.send("It's zero-indexed bozo")
                 return
-            await ctx.send("Not a valid number")
+            await ctx.send("Not a valid number for this homie")
             # TODO: Maybe ask if user wants to mod the number to return something in the future
             return
 
