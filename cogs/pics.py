@@ -25,12 +25,9 @@ class Pictures(commands.Cog):
 
     def sort_homie_pics(self, homie: str, update: str = "") -> list[Path]:
         os.chdir(os.path.join(self.pics_directory, homie))
-        sorted_list = sorted(Path(".").iterdir(),
-                             key=lambda f: f.stat().st_ctime)
+        sorted_list = sorted(Path(".").iterdir(), key=lambda f: f.stat().st_ctime)
         os.chdir(self.base_directory)
-        sorted_list = [
-            x for x in sorted_list if not x.parts[-1].startswith(".")
-        ]
+        sorted_list = [x for x in sorted_list if not x.parts[-1].startswith(".")]
         if update:
             self.homie_pics_list[homie] = sorted_list
         return sorted_list
@@ -47,8 +44,7 @@ class Pictures(commands.Cog):
             )
         ]
         self.homie_pics_list = {
-            homie: self.sort_homie_pics(homie)
-            for homie in self.homie_list
+            homie: self.sort_homie_pics(homie) for homie in self.homie_list
         }
 
     def set_prev_homie(self, homie: str, j: int | str):
@@ -56,8 +52,7 @@ class Pictures(commands.Cog):
 
     async def get_stats(self, ctx: commands.Context):
         homies = [
-            (homie, len(self.homie_pics_list[homie]))
-            for homie in self.homie_list
+            (homie, len(self.homie_pics_list[homie])) for homie in self.homie_list
         ]
         msg = "```\n"
         for homie in sorted(homies, key=lambda d: d[1], reverse=True):
@@ -78,7 +73,14 @@ class Pictures(commands.Cog):
             await ctx.send("Invalid homie.")
             return
         try:
-            await ctx.send(file=discord.File(os.path.join(self.pics_directory, name, self.homie_pics_list[name][num])), delete_after=5)
+            await ctx.send(
+                file=discord.File(
+                    os.path.join(
+                        self.pics_directory, name, self.homie_pics_list[name][num]
+                    )
+                ),
+                delete_after=5,
+            )
         except IndexError:
             if num == len(self.homie_pics_list[name]):
                 await ctx.send("It's zero-indexed bozo")
@@ -91,7 +93,7 @@ class Pictures(commands.Cog):
         if name not in self.homie_list:
             await ctx.send("Invalid homie.")
             return
-        msg = f"```{name: <10}{len(self.homie_pics_list[name]) : >4}```"
+        msg = f"```{name: <10}{len(self.homie_pics_list[name]): >4}```"
         await ctx.send(msg)
 
     async def get_prev_homie(self, ctx: commands.Context):
@@ -100,7 +102,7 @@ class Pictures(commands.Cog):
     @commands.command(
         name="homie",
         brief="Sends random homie pic",
-        help="Send random homie pic. Use &homie [homie name] [opt]. Use &homie list for a list of names. Or &homie stats for stats on homie pics. Picks random homie if no arguement provided. Use opt to provide specific picture in database, or latest to get latest picture",
+        help="Send random homie pic. Use &homie [homie name] [opt]. Use &homie list for a list of names. Or &homie stats for stats on homie pics. Picks random homie if no argument provided. Use opt to provide specific picture in database, or latest to get latest picture",
     )
     async def homies(self, ctx: commands.Context, homie="", opt=""):
         homie = homie.lower()
@@ -135,16 +137,19 @@ class Pictures(commands.Cog):
             if homie not in homies:
                 await ctx.send("invalid homie")
                 return
-        if opt.isdigit() or opt == "-1":
-            await self.get_num(ctx, homie, int(opt))
-            return
+        try:
+            if opt:
+                await self.get_num(ctx, homie, int(opt))
+                return
+        except ValueError as e:
+            print(e)
+            # pass
         j = random.randint(0, len(self.homie_pics_list[homie]) - 1)
         homie_to_send = os.path.join(
-            self.pics_directory, homie, self.homie_pics_list[homie][j])
-        self.set_prev_homie(homie, j)
-        await ctx.send(
-            file=discord.File(homie_to_send), delete_after=5
+            self.pics_directory, homie, self.homie_pics_list[homie][j]
         )
+        self.set_prev_homie(homie, j)
+        await ctx.send(file=discord.File(homie_to_send), delete_after=5)
 
     async def list(self, ctx: commands.Context):
         homies = self.homie_list
@@ -197,7 +202,13 @@ class Pictures(commands.Cog):
         brief="Adds a new image to specified folder(s).",
         help="Add a new image by adding the image as an attachment and specifying a folder location(s) (homie name) or amogus for sus quotes. &addpic {foldername} {foldername} ... {foldername}. Use &homie list to get valid homies.",
     )
-    async def addpic(self, ctx: commands.Context, folders: commands.Greedy[BennysStrConverter] = commands.parameter(description=": Name of homie to add pic to.")):
+    async def addpic(
+        self,
+        ctx: commands.Context,
+        folders: commands.Greedy[BennysStrConverter] = commands.parameter(
+            description=": Name of homie to add pic to."
+        ),
+    ):
         if not folders:
             await ctx.send("please specify folder(s).")
             return

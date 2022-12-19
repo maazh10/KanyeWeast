@@ -95,7 +95,7 @@ class Users(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error: commands.CommandError):
         # This prevents any commands with local handlers being handled here in on_command_error.
-        if hasattr(ctx.command, 'on_error'):
+        if hasattr(ctx.command, "on_error"):
             return
 
         # This prevents any cogs with an overwritten cog_command_error being handled here.
@@ -108,18 +108,20 @@ class Users(commands.Cog):
 
         # Allows us to check for original exceptions raised and sent to CommandInvokeError.
         # If nothing is found. We keep the exception passed to on_command_error.
-        error = getattr(error, 'original', error)
+        error = getattr(error, "original", error)
 
         # Anything in ignored will return and prevent anything happening.
         if isinstance(error, ignored):
             return
 
         if isinstance(error, commands.DisabledCommand):
-            await ctx.send(f'{ctx.command} has been disabled.')
+            await ctx.send(f"{ctx.command} has been disabled.")
 
         elif isinstance(error, commands.NoPrivateMessage):
             try:
-                await ctx.author.send(f'{ctx.command} can not be used in Private Messages.')
+                await ctx.author.send(
+                    f"{ctx.command} can not be used in Private Messages."
+                )
             except discord.HTTPException:
                 pass
 
@@ -135,10 +137,12 @@ class Users(commands.Cog):
 
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
-            print('Ignoring exception in command {}:'.format(
-                ctx.command), file=sys.stderr)
+            print(
+                "Ignoring exception in command {}:".format(ctx.command), file=sys.stderr
+            )
             traceback.print_exception(
-                type(error), error, error.__traceback__, file=sys.stderr)
+                type(error), error, error.__traceback__, file=sys.stderr
+            )
 
     ##################################################################################################
     ##################################### CUSTOM USER CONVERTER ######################################
@@ -151,12 +155,19 @@ class Users(commands.Cog):
                 return user
             except commands.UserNotFound as error:
                 traceback.print_exception(
-                    type(error), error, error.__traceback__, file=sys.stderr)
+                    type(error), error, error.__traceback__, file=sys.stderr
+                )
                 return ctx.author
 
     ##################################################################################################
 
-    async def annoy_logic(self, ctx: commands.Context, user: discord.abc.User, num: int = 1, opt_str: str = ""):
+    async def annoy_logic(
+        self,
+        ctx: commands.Context,
+        user: discord.abc.User,
+        num: int = 1,
+        opt_str: str = "",
+    ):
         annoy_string = (
             opt_str if opt_str else "get annoyed <:Pepepunch:794437891648520224>"
         )
@@ -196,13 +207,19 @@ class Users(commands.Cog):
             await ctx.send("Argument cannot be converted")
         print(type(e).__name__, repr(e))
 
-        await ctx.send("Specified number of times is too annoying or invalid or invalid user <:Pepepunch:794437891648520224>")
+        await ctx.send(
+            "Specified number of times is too annoying or invalid or invalid user <:Pepepunch:794437891648520224>"
+        )
         await self.annoy_logic(ctx, ctx.message.author, 5)
 
     @commands.command(
         name="roast", brief="Roast user", help="Roasts the author or mentioned user."
     )
-    async def roast(self, ctx: commands.Context, user: Annotated[discord.User, BennysUserConverter] = commands.Author):
+    async def roast(
+        self,
+        ctx: commands.Context,
+        user: Annotated[discord.User, BennysUserConverter] = commands.Author,
+    ):
         with open("roasts.txt", "r") as f:
             lines = f.readlines()
             i = randint(0, len(lines))
@@ -210,12 +227,15 @@ class Users(commands.Cog):
         await ctx.send(f"{user.mention}. {lines[i]}")
 
     @commands.command(
-        aliases=["penis", "dick", "dagger",
-                 "glizzy", "ydd", "cock", "schlong"],
+        aliases=["penis", "dick", "dagger", "glizzy", "ydd", "cock", "schlong"],
         brief="Shows your pp.",
         help="Shows your pp.",
     )
-    async def pp(self, ctx: commands.Context, user: Annotated[discord.User, BennysUserConverter] = commands.Author):
+    async def pp(
+        self,
+        ctx: commands.Context,
+        user: Annotated[discord.User, BennysUserConverter] = commands.Author,
+    ):
         length = 30 if await self.bot.is_owner(user) else randint(0, 30)
         penis = f"**{user.display_name}'s penis:**\n8{'=' * length}D"
         await ctx.send(penis)

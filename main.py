@@ -29,21 +29,24 @@ async def on_message(message: discord.Message):
     if message.author.id == bot.user.id:
         return
     what_responses = {"what", "wat", "wht", "wot", "whot", "waht"}
-    if not await bot.is_owner(message.author) and message.content.lower() in what_responses:
+    if (
+        not await bot.is_owner(message.author)
+        and message.content.lower() in what_responses
+    ):
         await message.reply("smb")
-    if (message.author.id == 630492967018430489):
-        if ("<:lemean:903117276587376710>" in message.content):
+    if message.author.id == 630492967018430489:
+        if "<:lemean:903117276587376710>" in message.content:
             await message.reply("<:lemean:903117276587376710>")
         if message.channel.id == 892504507106361394:
-            if (randint(0, 1000) % 7 == 0):
+            if randint(0, 1000) % 7 == 0:
                 await message.reply(file=discord.File("irtiza's_L.png"))
-            if (randint(0, 1000) % 7 == 4):
+            if randint(0, 1000) % 7 == 4:
                 await message.reply(file=discord.File("irtiza's_other_L.png"))
-    if (message.author.id == 884764651580162088):
+    if message.author.id == 884764651580162088:
         if message.channel.id == 892504507106361394:
-            if (randint(0, 1000) % 7 == 0):
+            if randint(0, 1000) % 7 == 0:
                 await message.reply(file=discord.File("mir's_L.png"))
-            if (randint(0, 1000) % 7 == 4):
+            if randint(0, 1000) % 7 == 4:
                 await message.reply(file=discord.File("mir's_other_L.png"))
 
 
@@ -92,8 +95,7 @@ async def snipe(ctx: commands.Context):
             description=contents, color=await get_color(pfp_url), timestamp=time
         )
         embed.set_image(url=bob_proxy_url)
-        embed.set_author(
-            name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
+        embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
         embed.set_footer(text=f"Deleted in : #{channel_name}")
         await ctx.channel.send(embed=embed)
     except:
@@ -101,16 +103,14 @@ async def snipe(ctx: commands.Context):
         embed = discord.Embed(
             description=contents, color=await get_color(pfp_url), timestamp=time
         )
-        embed.set_author(
-            name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
+        embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
         embed.set_footer(text=f"Deleted in : #{channel_name}")
         await ctx.channel.send(embed=embed)
 
 
 async def load_cogs():
     """Loads cogs for bot"""
-    cog_list = ["cogs.dev", "cogs.pics",
-                "cogs.misc", "cogs.music", "cogs.users"]
+    cog_list = ["cogs.dev", "cogs.pics", "cogs.misc", "cogs.music", "cogs.users"]
     for cog in cog_list:
         await bot.load_extension(cog)
 
