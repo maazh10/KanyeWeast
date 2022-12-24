@@ -8,6 +8,7 @@ import json
 import random
 import html
 import time
+import sqlite3
 
 class Miscellaneous(commands.Cog):
     """Rando stuff."""
@@ -91,11 +92,35 @@ class Miscellaneous(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
-        name="trivia",
+        aliases=["triv"],
         brief="Play a round of trivia",
         help="Play a round of trivia. Choose a category with &trivia {category}. To view a list of categories use &trivia categories. If no category is specified, a random category will be chosen.",
     )
-    async def triv(self, ctx: commands.Context, category: str = ""):
+    async def trivia(self, ctx: commands.Context, category: str = ""):
+        if category == "leaderbord" or category == "lb":
+            conn = sqlite3.connect('database.db')
+            c = conn.cursor()
+            sql = '''
+                SELECT user_id, easy + medium + hard AS score 
+                FROM TriviaLB 
+                WHERE guild_id = ? 
+                ORDER BY score DESC
+            '''
+            c.execute(sql, [ctx.guild.id])
+            embed = discord.Embed(title=f'Leaderboard - {ctx.guild}', color = discord.Colour.random())
+            embed.set_thumbnail(url=ctx.guild.icon.url)
+            rank = 1
+            board = "```"
+            for row in c.fetchall():
+                user = await ctx.guild.fetch_member(row[0])
+                score = row[1]
+                board += f'{score}\t{user.display_name:<30}\n'
+                rank += 1
+            board += "```"
+            embed.description = board
+            await ctx.send(embed=embed)
+            conn.close()
+            return
         if category == "categories":
             embed = discord.Embed(title='Categories', description=f'General\nBooks\nFilm\nMusic\nTheatre\nTelevision\nVideo Games\nBoard Games\nNature\nComputers\nMath\nMythology\nSports\nGeography\nHistory\nPolitics\nArt\nCelebrities\nAnimals\nVehicles\nComics\nGadgets\nAnime\nCartoon', color = discord.Colour.random())
             await ctx.send(embed=embed)
@@ -113,6 +138,7 @@ class Miscellaneous(commands.Cog):
             data = response.json()["results"][0]
             answers = data["incorrect_answers"]
             answers.append(data["correct_answer"])
+            print(data["correct_answer"])
             random.shuffle(answers)
             choices = ""
             for i in range(97, 97+len(answers)):
@@ -122,8 +148,6 @@ class Miscellaneous(commands.Cog):
             embed.add_field(name='Category', value=f'{data["category"]}', inline=True)
             embed.add_field(name='Choices', value=f'{choices}', inline=False)
             await ctx.send(embed=embed)
-            async def message_predicate(message):
-                return message.author.id == ctx.message.author.id and message.channel.id == ctx.message.channel.id
             response = await self.bot.wait_for('message')
             message_predicate = response.author.id == ctx.message.author.id and response.channel.id == ctx.message.channel.id
             while not message_predicate:
@@ -137,6 +161,19 @@ class Miscellaneous(commands.Cog):
                 await response.reply(f"You took too long to answer bozo, correct answer was **{html.unescape(data['correct_answer'])}**")
                 return
             if answers[ord(response.content.lower()) - 97] == data["correct_answer"]:
+                conn = sqlite3.connect('database.db')
+                cursor = conn.cursor()
+                sql = "SELECT * FROM TriviaLB WHERE user_id = ? AND guild_id = ?"
+                cursor.execute(sql, (ctx.author.id, ctx.guild.id))
+                if cursor.fetchone():
+                    sql = f"UPDATE TriviaLB SET {data['difficulty']} = {data['difficulty']} + 1 WHERE user_id = ? AND guild_id = ?"
+                    cursor.execute(sql, (ctx.author.id, ctx.guild.id))
+                    conn.commit()
+                else: 
+                    sql = f"INSERT INTO TriviaLB (user_id, guild_id, {data['difficulty']}) VALUES (?, ?, ?)"
+                    cursor.execute(sql, (ctx.author.id, ctx.guild.id, 1))
+                    conn.commit()
+                conn.close()
                 await response.reply("Correct!")
             else:
                 await response.reply(f"Wrong bozo, it was **{html.unescape(data['correct_answer'])}**")

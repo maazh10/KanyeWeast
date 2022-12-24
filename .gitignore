@@ -6,3 +6,4 @@ secrets.json
 __pycache__/
 *.py[cod]
 KanyeWeast.code-workspace
+database.db

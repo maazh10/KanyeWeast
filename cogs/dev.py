@@ -2,7 +2,6 @@ from discord.ext import commands
 import subprocess
 import json
 
-
 class DevelopersOnly(commands.Cog):
     """This category is only for dev use. If you're not a dev and try to use you could be banned."""
 
