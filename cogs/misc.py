@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from cogs.utils import get_color
+from cogs.utils import get_color, category_map
 
 import requests
 import json
@@ -97,14 +97,14 @@ class Miscellaneous(commands.Cog):
     )
     async def triv(self, ctx: commands.Context, category: str = ""):
         if category == "categories":
-            embed = discord.Embed(title='Categories', description=f'General\nBooks\nFilm\nMusic\nTheatre\nTelevision\nVideo Games\nBoard Games\nNature\n Computers\Math\nMythology\nSports\nGeography\nHistory\nPolitics\nArt\nCelebrities\nAnimals\nVehicles\nComics\nGadgets\nAnime\nCartoon', color = discord.Colour.random())
+            embed = discord.Embed(title='Categories', description=f'General\nBooks\nFilm\nMusic\nTheatre\nTelevision\nVideo Games\nBoard Games\nNature\nComputers\nMath\nMythology\nSports\nGeography\nHistory\nPolitics\nArt\nCelebrities\nAnimals\nVehicles\nComics\nGadgets\nAnime\nCartoon', color = discord.Colour.random())
             await ctx.send(embed=embed)
             return
         start = time.time()
         response = requests.get(f'https://opentdb.com/api.php?amount=1') 
         if category:
-            if self.category_map(category):
-                cat_id = self.category_map(category)
+            if category_map(category):
+                cat_id = category_map(category)
                 response = requests.get(f'https://opentdb.com/api.php?amount=1&category={cat_id}') 
             else:
                 await ctx.send("Invalid category. Please enter a valid category.")
@@ -143,37 +143,6 @@ class Miscellaneous(commands.Cog):
         else:
             await ctx.send(f'Request failed with status code {response.status_code}')
     
-    def category_map(self, name: str):
-        categories = {
-            "general": 9,
-            "books": 10,
-            "film": 11,
-            "music": 12,
-            "theatre": 13,
-            "television": 14,
-            "video games": 15,
-            "board games": 16,
-            "nature": 17,
-            "computers": 18,
-            "math": 19,
-            "mythology": 20,
-            "sports": 21,
-            "geography": 22,
-            "history": 23,
-            "politics": 24,
-            "art": 25,
-            "celebrities": 26,
-            "animals": 27,
-            "vehicles": 28,
-            "comics": 29,
-            "gadgets": 30,
-            "anime": 31,
-            "cartoon": 32
-        }
-        try:
-            return categories[name]
-        except KeyError:
-            return None
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
