@@ -138,7 +138,6 @@ class Miscellaneous(commands.Cog):
             data = response.json()["results"][0]
             answers = data["incorrect_answers"]
             answers.append(data["correct_answer"])
-            print(data["correct_answer"])
             random.shuffle(answers)
             choices = ""
             for i in range(97, 97+len(answers)):

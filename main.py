@@ -37,18 +37,6 @@ async def on_message(message: discord.Message):
     if message.author.id == 630492967018430489:
         if "<:lemean:903117276587376710>" in message.content:
             await message.reply("<:lemean:903117276587376710>")
-        if randint(0, 100) < 10:
-            await message.reply(file=discord.File("irtizaL.jpg"))
-        if message.channel.id == 892504507106361394:
-            if randint(0, 1000) % 7 == 0:
-                await message.reply(file=discord.File("irtizaL1.jpeg"))
-            elif randint(0, 1000) % 7 == 4:
-                await message.reply(file=discord.File("irtizaL2.jpeg"))
-            elif randint(0, 1000) % 7 == 7:
-                await message.reply(file=discord.File("irtizaL3.jpg"))
-            elif randint(0, 1000) % 7 == 10:
-                await message.reply(file=discord.File("irtizaL4.jpeg"))
-
 
 bot.sniped_messages = {}
 
