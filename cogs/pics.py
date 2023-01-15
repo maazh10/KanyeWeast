@@ -193,7 +193,7 @@ class Pictures(commands.Cog):
 
     class BennysStrConverter(commands.Converter):
         async def convert(self, ctx, argument) -> str:
-            return str(argument)
+            return str(argument).lower()
 
     ##################################################################################################
 
