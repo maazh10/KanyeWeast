@@ -114,6 +114,7 @@ class Pictures(commands.Cog):
                 homie = "irtiza"
             case "luce":
                 await ctx.send("too cool for pics :)")
+                return
             case "list":
                 await self.list(ctx)
                 return
