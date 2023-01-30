@@ -126,7 +126,7 @@ class Miscellaneous(commands.Cog):
             await ctx.send(embed=embed)
             return
         start = time.time()
-        response = requests.get(f'https://opentdb.com/api.php?amount=1') 
+        response = requests.get(f'https://opentdb.com/api.php?amount=2') 
         if category:
             if category_map(category):
                 cat_id = category_map(category)
