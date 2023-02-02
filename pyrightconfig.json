@@ -1,0 +1,5 @@
+{
+    "exclude": [ "./bot_env" ],
+    "venvPath": ".",
+    "venv": "bot_env"
+}
