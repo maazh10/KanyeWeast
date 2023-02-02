@@ -247,5 +247,14 @@ class Miscellaneous(commands.Cog):
             embed.set_image(url=data["url"])
             await ctx.send(embed=embed)
 
+    @commands.command(
+        name="fuck",
+        brief="fuck",
+        help="fuck",
+    )
+    async def fuck(self, ctx: commands.Context):
+        await ctx.send("fuck")
+
+
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
