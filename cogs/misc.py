@@ -10,6 +10,7 @@ import html
 import time
 import sqlite3
 
+
 class Miscellaneous(commands.Cog):
     """Rando stuff."""
 
@@ -98,23 +99,25 @@ class Miscellaneous(commands.Cog):
     )
     async def trivia(self, ctx: commands.Context, category: str = ""):
         if category == "leaderbord" or category == "lb":
-            conn = sqlite3.connect('database.db')
+            conn = sqlite3.connect("database.db")
             c = conn.cursor()
-            sql = '''
+            sql = """
                 SELECT user_id, easy + medium + hard AS score 
                 FROM TriviaLB 
                 WHERE guild_id = ? 
                 ORDER BY score DESC
-            '''
+            """
             c.execute(sql, [ctx.guild.id])
-            embed = discord.Embed(title=f'Leaderboard - {ctx.guild}', color = discord.Colour.random())
+            embed = discord.Embed(
+                title=f"Leaderboard - {ctx.guild}", color=discord.Colour.random()
+            )
             embed.set_thumbnail(url=ctx.guild.icon.url)
             rank = 1
             board = "```"
             for row in c.fetchall():
                 user = await ctx.guild.fetch_member(row[0])
                 score = row[1]
-                board += f'{score}\t{user.display_name:<30}\n'
+                board += f"{score}\t{user.display_name:<30}\n"
                 rank += 1
             board += "```"
             embed.description = board
@@ -122,15 +125,21 @@ class Miscellaneous(commands.Cog):
             conn.close()
             return
         if category == "categories":
-            embed = discord.Embed(title='Categories', description=f'General\nBooks\nFilm\nMusic\nTheatre\nTelevision\nVideo Games\nBoard Games\nNature\nComputers\nMath\nMythology\nSports\nGeography\nHistory\nPolitics\nArt\nCelebrities\nAnimals\nVehicles\nComics\nGadgets\nAnime\nCartoon', color = discord.Colour.random())
+            embed = discord.Embed(
+                title="Categories",
+                description=f"General\nBooks\nFilm\nMusic\nTheatre\nTelevision\nVideo Games\nBoard Games\nNature\nComputers\nMath\nMythology\nSports\nGeography\nHistory\nPolitics\nArt\nCelebrities\nAnimals\nVehicles\nComics\nGadgets\nAnime\nCartoon",
+                color=discord.Colour.random(),
+            )
             await ctx.send(embed=embed)
             return
         start = time.time()
-        response = requests.get(f'https://opentdb.com/api.php?amount=1') 
+        response = requests.get(f"https://opentdb.com/api.php?amount=1")
         if category:
             if category_map(category):
                 cat_id = category_map(category)
-                response = requests.get(f'https://opentdb.com/api.php?amount=1&category={cat_id}') 
+                response = requests.get(
+                    f"https://opentdb.com/api.php?amount=1&category={cat_id}"
+                )
             else:
                 await ctx.send("Invalid category. Please enter a valid category.")
                 return
@@ -140,27 +149,45 @@ class Miscellaneous(commands.Cog):
             answers.append(data["correct_answer"])
             random.shuffle(answers)
             choices = ""
-            for i in range(97, 97+len(answers)):
+            for i in range(97, 97 + len(answers)):
                 choices += f"\n({chr(i)}) {html.unescape(answers[i - 97])}\n"
-            embed = discord.Embed(title='Question', description=f'{html.unescape(data["question"])}', color = discord.Colour.random())
-            embed.add_field(name='Difficulty', value=f'{data["difficulty"].capitalize()}', inline=True)
-            embed.add_field(name='Category', value=f'{data["category"]}', inline=True)
-            embed.add_field(name='Choices', value=f'{choices}', inline=False)
+            embed = discord.Embed(
+                title="Question",
+                description=f'{html.unescape(data["question"])}',
+                color=discord.Colour.random(),
+            )
+            embed.add_field(
+                name="Difficulty",
+                value=f'{data["difficulty"].capitalize()}',
+                inline=True,
+            )
+            embed.add_field(name="Category", value=f'{data["category"]}', inline=True)
+            embed.add_field(name="Choices", value=f"{choices}", inline=False)
             await ctx.send(embed=embed)
-            response = await self.bot.wait_for('message')
-            message_predicate = response.author.id == ctx.message.author.id and response.channel.id == ctx.message.channel.id
+            response = await self.bot.wait_for("message")
+            message_predicate = (
+                response.author.id == ctx.message.author.id
+                and response.channel.id == ctx.message.channel.id
+            )
             while not message_predicate:
-                response = await self.bot.wait_for('message')
-                message_predicate = response.author.id == ctx.message.author.id and response.channel.id == ctx.message.channel.id
+                response = await self.bot.wait_for("message")
+                message_predicate = (
+                    response.author.id == ctx.message.author.id
+                    and response.channel.id == ctx.message.channel.id
+                )
             response_list = ["a", "b", "c", "d"] if len(answers) == 4 else ["a", "b"]
             if response.content.lower() not in response_list:
-                await response.reply(f"Invalid response bozo, correct answer was **{html.unescape(data['correct_answer'])}**")
+                await response.reply(
+                    f"Invalid response bozo, correct answer was **{html.unescape(data['correct_answer'])}**"
+                )
                 return
             if time.time() - start > 20:
-                await response.reply(f"You took too long to answer bozo, correct answer was **{html.unescape(data['correct_answer'])}**")
+                await response.reply(
+                    f"You took too long to answer bozo, correct answer was **{html.unescape(data['correct_answer'])}**"
+                )
                 return
             if answers[ord(response.content.lower()) - 97] == data["correct_answer"]:
-                conn = sqlite3.connect('database.db')
+                conn = sqlite3.connect("database.db")
                 cursor = conn.cursor()
                 sql = "SELECT * FROM TriviaLB WHERE user_id = ? AND guild_id = ?"
                 cursor.execute(sql, (ctx.author.id, ctx.guild.id))
@@ -168,17 +195,45 @@ class Miscellaneous(commands.Cog):
                     sql = f"UPDATE TriviaLB SET {data['difficulty']} = {data['difficulty']} + 1 WHERE user_id = ? AND guild_id = ?"
                     cursor.execute(sql, (ctx.author.id, ctx.guild.id))
                     conn.commit()
-                else: 
+                else:
                     sql = f"INSERT INTO TriviaLB (user_id, guild_id, {data['difficulty']}) VALUES (?, ?, ?)"
                     cursor.execute(sql, (ctx.author.id, ctx.guild.id, 1))
                     conn.commit()
                 conn.close()
                 await response.reply("Correct!")
             else:
-                await response.reply(f"Wrong bozo, it was **{html.unescape(data['correct_answer'])}**")
+                await response.reply(
+                    f"Wrong bozo, it was **{html.unescape(data['correct_answer'])}**"
+                )
         else:
-            await ctx.send(f'Request failed with status code {response.status_code}')
-    
+            await ctx.send(f"Request failed with status code {response.status_code}")
+
+    @commands.command(
+        name="cat",
+        brief="Sends a cute cat pic",
+        help="Sends a cute cat pic through an API",
+    )
+    async def catpic(self, ctx: commands.Context):
+        r = requests.get("https://api.thecatapi.com/v1/images/search")
+        if r.status_code == 200:
+            data = r.json()[0]
+            embed = discord.Embed(title="Cat", color=discord.Colour.random())
+            embed.set_image(url=data["url"])
+            await ctx.send(embed=embed)
+
+    @commands.command(
+        name="dog",
+        brief="Sends a cute dog pic",
+        help="Sends a cute dog pic through an API",
+    )
+    async def dogpic(self, ctx: commands.Context):
+        r = requests.get("https://api.thedogapi.com/v1/images/search")
+        if r.status_code == 200:
+            data = r.json()[0]
+            embed = discord.Embed(title="Dog", color=discord.Colour.random())
+            embed.set_image(url=data["url"])
+            await ctx.send(embed=embed)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
