@@ -242,8 +242,8 @@ class Miscellaneous(commands.Cog):
     async def duckpic(self, ctx: commands.Context):
         r = requests.get("https://random-d.uk/api/v2/random")
         if r.status_code == 200:
-            data = r.json()[0]
-            embed = discord.Embed(title="Dog", color=discord.Colour.random())
+            data = r.json()
+            embed = discord.Embed(title="Duck", color=discord.Colour.random())
             embed.set_image(url=data["url"])
             await ctx.send(embed=embed)
 
