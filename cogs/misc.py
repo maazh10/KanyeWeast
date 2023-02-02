@@ -234,6 +234,18 @@ class Miscellaneous(commands.Cog):
             embed.set_image(url=data["url"])
             await ctx.send(embed=embed)
 
+    @commands.command(
+        name="duck",
+        brief="Sends a cute duck pic",
+        help="Sends a cute duck pic through an API",
+    )
+    async def duckpic(self, ctx: commands.Context):
+        r = requests.get("https://random-d.uk/api/v2/random")
+        if r.status_code == 200:
+            data = r.json()[0]
+            embed = discord.Embed(title="Dog", color=discord.Colour.random())
+            embed.set_image(url=data["url"])
+            await ctx.send(embed=embed)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
