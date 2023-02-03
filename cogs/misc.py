@@ -10,6 +10,7 @@ import html
 import time
 import sqlite3
 import traceback
+import typing
 
 
 class Miscellaneous(commands.Cog):
@@ -309,8 +310,16 @@ class Miscellaneous(commands.Cog):
         brief="fuck",
         help="fuck",
     )
-    async def fuck(self, ctx: commands.Context):
-        await ctx.send("fuck")
+    async def fuck(self, ctx: commands.Context, *fucks):
+        if ctx.message.mentions:
+            for user in ctx.message.mentions:
+                for _ in fucks:
+                    await ctx.send(f"{user.mention} fuck")
+            return
+        if not fucks:
+            fucks = [0]
+        for _ in fucks:
+            await ctx.send("fuck me")
 
 
 async def setup(bot: commands.Bot):
