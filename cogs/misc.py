@@ -306,6 +306,17 @@ class Miscellaneous(commands.Cog):
             await ctx.send(embed=embed)
 
     @commands.command(
+        name="seal",
+        brief="Sends a cute seal pic",
+        help="Sends a cute seal pic through an API",
+    )
+    async def sealpic(self, ctx: commands.Context):
+        seal_num = random.randint(0, 84)
+        embed = discord.Embed(title="Seal", color=discord.Colour.random())
+        embed.set_image(url=f"https://raw.githubusercontent.com/FocaBot/random-seal/master/seals/{seal_num:04}.jpg")
+        await ctx.send(embed=embed)
+
+    @commands.command(
         name="fuck",
         brief="fuck",
         help="fuck",
