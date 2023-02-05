@@ -80,7 +80,7 @@ async def snipe(ctx: commands.Context):
     try:
         pfp_url = author.avatar.url
         embed = discord.Embed(
-            description=contents, color=await get_color(pfp_url), timestamp=time
+            description=contents, color=get_color(pfp_url), timestamp=time
         )
         embed.set_image(url=bob_proxy_url)
         embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
@@ -89,7 +89,7 @@ async def snipe(ctx: commands.Context):
     except:
         pfp_url = author.avatar.url
         embed = discord.Embed(
-            description=contents, color=await get_color(pfp_url), timestamp=time
+            description=contents, color=get_color(pfp_url), timestamp=time
         )
         embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
         embed.set_footer(text=f"Deleted in : #{channel_name}")
