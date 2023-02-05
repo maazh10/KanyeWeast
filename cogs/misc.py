@@ -203,9 +203,12 @@ class Miscellaneous(commands.Cog):
                 return
         if response.status_code == 200:
             data = response.json()["results"][0]
-            answers = data["incorrect_answers"]
-            answers.append(data["correct_answer"])
-            random.shuffle(answers)
+            if data["type"] == "multiple":
+                answers = data["incorrect_answers"]
+                answers.append(data["correct_answer"])
+                random.shuffle(answers)
+            else:
+                answers = ["True", "False"]
             choices = ""
             for i in range(97, 97 + len(answers)):
                 choices += f"\n({chr(i)}) {html.unescape(answers[i - 97])}\n"
@@ -222,31 +225,28 @@ class Miscellaneous(commands.Cog):
             embed.add_field(name="Category", value=f'{data["category"]}', inline=True)
             embed.add_field(name="Choices", value=f"{choices}", inline=False)
             await ctx.send(embed=embed)
+            response_list = ["a", "b", "c", "d"] if len(answers) == 4 else ["a", "b"]
             response = await self.bot.wait_for("message")
             message_predicate = (
                 response.author.id == ctx.message.author.id
                 and response.channel.id == ctx.message.channel.id
+                and response.content.lower() in response_list
             )
             while not message_predicate:
                 response = await self.bot.wait_for("message")
                 message_predicate = (
                     response.author.id == ctx.message.author.id
                     and response.channel.id == ctx.message.channel.id
+                    and response.content.lower() in response_list
                 )
-            response_list = ["a", "b", "c", "d"] if len(answers) == 4 else ["a", "b"]
-            if response.content.lower() not in response_list:
-                await response.reply(
-                    f"Invalid response bozo, correct answer was **{html.unescape(data['correct_answer'])}**"
-                )
-                return
             if time.time() - start > 20:
                 await response.reply(
                     f"You took too long to answer bozo, correct answer was **{html.unescape(data['correct_answer'])}**"
                 )
                 return
+            conn = sqlite3.connect("database.db")
+            cursor = conn.cursor()
             if answers[ord(response.content.lower()) - 97] == data["correct_answer"]:
-                conn = sqlite3.connect("database.db")
-                cursor = conn.cursor()
                 sql = "SELECT * FROM TriviaLB WHERE user_id = ? AND guild_id = ?"
                 cursor.execute(sql, (ctx.author.id, ctx.guild.id))
                 if cursor.fetchone():
@@ -257,12 +257,15 @@ class Miscellaneous(commands.Cog):
                     sql = f"INSERT INTO TriviaLB (user_id, guild_id, {data['difficulty']}) VALUES (?, ?, ?)"
                     cursor.execute(sql, (ctx.author.id, ctx.guild.id, 1))
                     conn.commit()
-                conn.close()
                 await response.reply("Correct!")
             else:
+                sql = f"UPDATE TriviaLB SET {data['difficulty']} = {data['difficulty']} - 1 WHERE user_id = ? AND guild_id = ? AND {data['difficulty']} > 0"
+                cursor.execute(sql, (ctx.author.id, ctx.guild.id))
+                conn.commit()
                 await response.reply(
                     f"Wrong bozo, it was **{html.unescape(data['correct_answer'])}**"
                 )
+            conn.close()
         else:
             await ctx.send(f"Request failed with status code {response.status_code}")
 
