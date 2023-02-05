@@ -313,6 +313,26 @@ class Music(commands.Cog):
         else:
             await ctx.send("You are not in a voice channel pleb.")
 
+    @commands.command(
+        name="",
+        brief="Sends hbk song.",
+        help="Sends hbk song from a special playlist :)",
+    )
+    async def hbk(self, ctx: commands.Context):
+        sp = spotipy.Spotify(
+            auth_manager=SpotifyClientCredentials(
+                client_id=self.keys["SPOTIFY_CLIENT_ID"],
+                client_secret=self.keys["SPOTIFY_CLIENT_SECRET"],
+            )
+        )
+
+        playlist_id = "7xMtk8dsPZCpQhASkO9Uvi?si=5ad1144294014dec"
+        results = sp.playlist(playlist_id)
+        items = results["tracks"]["items"]
+        rnd = randint(0, len(items))
+        song_url = items[rnd]["track"]["external_urls"]["spotify"]
+        await ctx.send(song_url)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Music(bot))

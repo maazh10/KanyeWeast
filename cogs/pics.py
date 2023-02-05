@@ -294,15 +294,15 @@ class Pictures(commands.Cog):
         await ctx.send(file=discord.File(os.path.join(haram_dir, images[i])))
 
     @commands.command(
-        aliases=["sad"],
+        name="",
         brief="Sends heartbroken quote/image.",
         help="Sends heartbroken quote/image.",
     )
-    async def hbk(self, ctx: commands.Context):
-        hbk_dir = os.path.join(self.pics_directory, "hbk")
-        images = os.listdir(hbk_dir)
+    async def sad(self, ctx: commands.Context):
+        sad_dir = os.path.join(self.pics_directory, "sad")
+        images = os.listdir(sad_dir)
         i = random.randint(0, len(images) - 1)
-        file = discord.File(os.path.join(hbk_dir, images[i]))
+        file = discord.File(os.path.join(sad_dir, images[i]))
         text = images[i][:-3]
         if len(text) >= 40:
             await ctx.send(text, file=file)
