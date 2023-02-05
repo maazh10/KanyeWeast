@@ -338,17 +338,26 @@ class Miscellaneous(commands.Cog):
         name="joke", brief="Sends a joke", help="Sends a joke through jokeAPI"
     )
     async def joke(self, ctx, *args):
-        if len(args) != 0 and args[0] == "one":
-            response = requests.get("https://v2.jokeapi.dev/joke/Any?type=single")
-            json_data = json.loads(response.text)
-            setup = json_data["joke"]
-            await ctx.send(setup)
-        else:
-            response = requests.get("https://v2.jokeapi.dev/joke/Any?type=twopart")
-            json_data = json.loads(response.text)
+        categories = ["programming", "misc", "dark", "pun", "spooky", "christmas"]
+        category = "Any"
+        if len(args) == 1:
+            if args[0] in categories:
+                category = args[0].lower()
+            else:
+                await ctx.send("Invalid category")
+                return
+        elif len(args) > 1:
+            await ctx.send("Too many arguements")
+            return
+        response = requests.get(f"https://v2.jokeapi.dev/joke/{category}")
+        json_data = json.loads(response.text)
+        if json_data["type"] == "twopart":
             setup = json_data["setup"]
             punchline = json_data["delivery"]
             await ctx.send(setup + "\n" + "||" + punchline + "||")
+            return
+        setup = json_data["joke"]
+        await ctx.send(setup)
 
 
 async def setup(bot: commands.Bot):
