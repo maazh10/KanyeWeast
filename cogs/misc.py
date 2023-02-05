@@ -325,12 +325,12 @@ class Miscellaneous(commands.Cog):
         if ctx.message.mentions:
             for user in ctx.message.mentions:
                 for _ in fucks:
-                    await ctx.send(f"{user.mention} fuck", delete_after=5)
+                    await ctx.send(f"{user.mention} fuck")
             return
         if not fucks:
             fucks = [0]
         for _ in fucks:
-            await ctx.send("fuck me", delete_after=5)
+            await ctx.send("fuck me")
 
 
 async def setup(bot: commands.Bot):
