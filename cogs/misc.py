@@ -335,7 +335,9 @@ class Miscellaneous(commands.Cog):
             await ctx.send("fuck me")
 
     @commands.command(
-        name="joke", brief="Sends a joke", help="Sends a joke through jokeAPI"
+        name="joke",
+        brief="Sends a joke",
+        help="Sends a joke through jokeAPI. Do &joke {category} for a specific category. Choose from [programming, misc, dark, pun, spooky, christmas]. If no category is specified a random one will be picked.",
     )
     async def joke(self, ctx, *args):
         categories = ["programming", "misc", "dark", "pun", "spooky", "christmas"]
