@@ -313,7 +313,9 @@ class Miscellaneous(commands.Cog):
     async def sealpic(self, ctx: commands.Context):
         seal_num = random.randint(0, 84)
         embed = discord.Embed(title="Seal", color=discord.Colour.random())
-        embed.set_image(url=f"https://raw.githubusercontent.com/FocaBot/random-seal/master/seals/{seal_num:04}.jpg")
+        embed.set_image(
+            url=f"https://raw.githubusercontent.com/FocaBot/random-seal/master/seals/{seal_num:04}.jpg"
+        )
         await ctx.send(embed=embed)
 
     @commands.command(
@@ -331,6 +333,22 @@ class Miscellaneous(commands.Cog):
             fucks = [0]
         for _ in fucks:
             await ctx.send("fuck me")
+
+    @commands.command(
+        name="joke", brief="Sends a joke", help="Sends a joke through jokeAPI"
+    )
+    async def joke(self, ctx, *args):
+        if len(args) != 0 and args[0] == "one":
+            response = requests.get("https://v2.jokeapi.dev/joke/Any?type=single")
+            json_data = json.loads(response.text)
+            setup = json_data["joke"]
+            await ctx.send(setup)
+        else:
+            response = requests.get("https://v2.jokeapi.dev/joke/Any?type=twopart")
+            json_data = json.loads(response.text)
+            setup = json_data["setup"]
+            punchline = json_data["delivery"]
+            await ctx.send(setup + "\n" + "||" + punchline + "||")
 
 
 async def setup(bot: commands.Bot):
