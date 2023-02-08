@@ -175,7 +175,7 @@ class Miscellaneous(commands.Cog):
             for row in c.fetchall():
                 user = await ctx.guild.fetch_member(row[0])
                 score = row[1]
-                board += f"{score}\t{user.display_name:<30}\n"
+                board += f"{score: <4}\t{user.display_name:<30}\n"
                 rank += 1
             board += "```"
             embed.description = board
