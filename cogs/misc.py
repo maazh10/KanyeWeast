@@ -1,8 +1,8 @@
 import discord
-from discord.app_commands import command
+# from discord.app_commands import command
 from discord.ext import commands
 
-from cogs.utils import get_color, category_map
+from cogs.utils import get_color, category_map, UserBanned
 
 import requests
 import json
@@ -13,11 +13,6 @@ import sqlite3
 import traceback
 import sys
 import typing
-
-class UserBanned(commands.CommandError):
-    def __init__(self, user, *args, **kwargs):
-        self.user = user
-        super().__init__(*args, **kwargs)
 
 class Miscellaneous(commands.Cog):
     """Rando stuff."""
@@ -44,7 +39,7 @@ class Miscellaneous(commands.Cog):
         # TODO: make an actual global error handler that uses this if block
         # This prevents any cogs with an overwritten cog_command_error being handled here.
         # cog = ctx.cog
-        # if cog:
+        # if cog and cog != self.bot.get_cog("Miscellaneous"):
         #     if cog._get_overridden_method(cog.cog_command_error) is not None:
         #         return
 
@@ -97,22 +92,11 @@ class Miscellaneous(commands.Cog):
     ######################################## COG BAN CHECK ###########################################
     ##################################################################################################
     
-
     async def cog_check(self, ctx: commands.Context) -> bool:
-        if ctx.author in self.banned_set:
+        dev = self.bot.get_cog("DevelopersOnly")
+        if ctx.author in dev.banned_set:
             raise UserBanned(ctx.message.author)
         return True
-
-    async def ban_user(self, ctx: commands.Context, user: discord.User):
-        self.banned_set.add(user)
-        await ctx.send(f"{user.mention} banned")
-
-    async def unban_user(self, ctx: commands.Context, user: discord.User):
-        try:
-            self.banned_set.remove(user)
-        except ValueError:
-            await ctx.send(f"{user.mention} not in banned set.")
-        await ctx.send(f"{user.mention} unbanned")
 
     ##################################################################################################
     ##################################################################################################

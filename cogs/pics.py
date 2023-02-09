@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from cogs.utils import UserBanned
 
 import os
 import random
@@ -15,6 +16,8 @@ import traceback
 
 class Pictures(commands.Cog):
     """All your pic related commands lie here."""
+    
+
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -22,6 +25,52 @@ class Pictures(commands.Cog):
         self.pics_directory = os.path.abspath(os.path.join(os.curdir, "pics"))
         self.set_homie_list()
         self.set_prev_homie("Nothing", "yet :(")
+
+    ##################################################################################################
+    ####################################### COG ERROR HANDLER ########################################
+    ##################################################################################################
+
+    async def cog_command_error(self, ctx, error: commands.CommandError):
+        if hasattr(ctx.command, "on_error"):
+            return
+
+        ignored = ()
+
+        # Allows us to check for original exceptions raised and sent to CommandInvokeError.
+        # If nothing is found. We keep the exception passed to on_command_error.
+        error = getattr(error, "original", error)
+
+        # Anything in ignored will return and prevent anything happening.
+        if isinstance(error, ignored):
+            return
+
+        if isinstance(error, UserBanned):
+            await ctx.send("You are banned.")
+            return
+
+        else:
+            # All other Errors not returned come here. And we can just print the default TraceBack.
+            print(
+                "Ignoring exception in command {}:".format(ctx.command), file=sys.stderr
+            )
+            traceback.print_exception(
+                type(error), error, error.__traceback__, file=sys.stderr
+            )
+
+
+    ##################################################################################################
+    ######################################## COG BAN CHECK ###########################################
+    ##################################################################################################
+
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        dev = self.bot.get_cog("DevelopersOnly")
+        if ctx.author in dev.banned_set:
+            raise UserBanned(ctx.message.author)
+        return True
+
+    ##################################################################################################
+    ##################################################################################################
+    ##################################################################################################
 
     def sort_homie_pics(self, homie: str, update: str = "") -> list[Path]:
         os.chdir(os.path.join(self.pics_directory, homie))

@@ -2,6 +2,7 @@ import json
 
 from colorthief import ColorThief
 import requests
+from discord.ext import commands
 
 
 def get_color(img_url: str):
@@ -15,6 +16,10 @@ def get_color(img_url: str):
     hexa = hexa.replace("#", "")
     return int(hexa, 16)
 
+class UserBanned(commands.CommandError):
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
 
 def category_map(name: str):
     categories = {

@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+from cogs.utils import UserBanned
 from random import randint
 import asyncio
 import sys
@@ -114,6 +115,10 @@ class Users(commands.Cog):
         if isinstance(error, ignored):
             return
 
+        if isinstance(error, UserBanned):
+            await ctx.send("You are banned.")
+            return
+
         if isinstance(error, commands.DisabledCommand):
             await ctx.send(f"{ctx.command} has been disabled.")
 
@@ -143,6 +148,16 @@ class Users(commands.Cog):
             traceback.print_exception(
                 type(error), error, error.__traceback__, file=sys.stderr
             )
+
+    ##################################################################################################
+    ######################################## COG BAN CHECK ###########################################
+    ##################################################################################################
+    
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        dev = self.bot.get_cog("DevelopersOnly")
+        if ctx.author in dev.banned_set:
+            raise UserBanned(ctx.message.author)
+        return True
 
     ##################################################################################################
     ##################################### CUSTOM USER CONVERTER ######################################

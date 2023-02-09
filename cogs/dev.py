@@ -1,4 +1,5 @@
 from discord.ext import commands
+import discord
 import subprocess
 import json
 
@@ -7,6 +8,7 @@ class DevelopersOnly(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.banned_set = set()
         with open("secrets.json") as f:
             self.keys = json.load(f)
 
@@ -101,10 +103,9 @@ class DevelopersOnly(commands.Cog):
             help="Bans mentioned user(s) from using commands from the Miscellaneous cog"
     )
     async def ban(self, ctx: commands.Context):
-       misc = self.bot.get_cog("Miscellaneous")
-       if misc and ctx.message.mentions:
+       if ctx.message.mentions:
            for user in ctx.message.mentions:
-               await misc.ban_user(ctx, user)
+               await self.ban_user(ctx, user)
 
     @commands.command(
             name="unban",
@@ -112,10 +113,20 @@ class DevelopersOnly(commands.Cog):
             help="Unbans mentioned user(s) from using commands from the Miscellaneous cog"
     )
     async def unban(self, ctx: commands.Context):
-       misc = self.bot.get_cog("Miscellaneous")
-       if misc and ctx.message.mentions:
+       if ctx.message.mentions:
            for user in ctx.message.mentions:
-               await misc.unban_user(ctx, user)
+               await self.unban_user(ctx, user)
+
+    async def ban_user(self, ctx: commands.Context, user: discord.abc.User):
+        self.banned_set.add(user)
+        await ctx.send(f"{user.mention} banned")
+
+    async def unban_user(self, ctx: commands.Context, user: discord.abc.User):
+        try:
+            self.banned_set.remove(user)
+        except ValueError:
+            await ctx.send(f"{user.mention} not in banned set.")
+        await ctx.send(f"{user.mention} unbanned")
 
     @commands.command(
         name="showban",
@@ -123,13 +134,10 @@ class DevelopersOnly(commands.Cog):
         help="Show banned users",
     )
     async def showban(self, ctx: commands.Context):
-        misc = self.bot.get_cog("Miscellaneous")
-        if misc:
-            banned_set = misc.banned_set
-            banned_list = "```"
-            banned_list += "\n".join(map(lambda user: user.display_name, banned_set))
-            banned_list += "```"
-            await ctx.send(banned_list)
+        banned_list = "```"
+        banned_list += "\n".join(map(lambda user: user.display_name, self.banned_set))
+        banned_list += "```"
+        await ctx.send(banned_list)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(DevelopersOnly(bot))
