@@ -135,7 +135,7 @@ class DevelopersOnly(commands.Cog):
     )
     async def showban(self, ctx: commands.Context):
         banned_list = "```"
-        banned_list += "\n".join(map(lambda user: user.display_name, self.banned_set))
+        banned_list += "\n".join(map(lambda user: user.display_name, self.banned_set)) if self.banned_set else "No banned users yet."
         banned_list += "```"
         await ctx.send(banned_list)
 
