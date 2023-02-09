@@ -1,4 +1,5 @@
 import discord
+from discord.app_commands import command
 from discord.ext import commands
 
 from cogs.utils import get_color, category_map
@@ -10,14 +11,20 @@ import html
 import time
 import sqlite3
 import traceback
+import sys
 import typing
 
+class UserBanned(commands.CommandError):
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
 
 class Miscellaneous(commands.Cog):
     """Rando stuff."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.banned_set = set()
 
     def get_quote(self):
         response = requests.get("https://api.kanye.rest")
@@ -25,20 +32,21 @@ class Miscellaneous(commands.Cog):
         return json_data["quote"]
 
     ##################################################################################################
-    ###################################### GLOBAL ERROR HANDLER ######################################
+    ####################################### COG ERROR HANDLER ########################################
     ##################################################################################################
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error: commands.CommandError):
+    # @commands.Cog.listener()
+    async def cog_command_error(self, ctx, error: commands.CommandError):
         # This prevents any commands with local handlers being handled here in on_command_error.
         if hasattr(ctx.command, "on_error"):
             return
 
+        # TODO: make an actual global error handler that uses this if block
         # This prevents any cogs with an overwritten cog_command_error being handled here.
-        cog = ctx.cog
-        if cog:
-            if cog._get_overridden_method(cog.cog_command_error) is not None:
-                return
+        # cog = ctx.cog
+        # if cog:
+        #     if cog._get_overridden_method(cog.cog_command_error) is not None:
+        #         return
 
         ignored = ()
 
@@ -48,6 +56,10 @@ class Miscellaneous(commands.Cog):
 
         # Anything in ignored will return and prevent anything happening.
         if isinstance(error, ignored):
+            return
+
+        if isinstance(error, UserBanned):
+            await ctx.send("You are banned.")
             return
 
         if isinstance(error, commands.DisabledCommand):
@@ -79,6 +91,42 @@ class Miscellaneous(commands.Cog):
             traceback.print_exception(
                 type(error), error, error.__traceback__, file=sys.stderr
             )
+        return
+
+    ##################################################################################################
+    ######################################## COG BAN CHECK ###########################################
+    ##################################################################################################
+    
+
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        if ctx.author in self.banned_set:
+            raise UserBanned(ctx.message.author)
+        return True
+
+    async def ban_user(self, ctx: commands.Context, user: discord.User):
+        self.banned_set.add(user)
+        await ctx.send(f"{user.mention} banned")
+
+    async def unban_user(self, ctx: commands.Context, user: discord.User):
+        try:
+            self.banned_set.remove(user)
+        except ValueError:
+            await ctx.send(f"{user.mention} not in banned set.")
+        await ctx.send(f"{user.mention} unbanned")
+
+    @commands.command(
+        name="showban",
+        brief="Show banned users",
+        help="Show banned users",
+    )
+    async def showban(self, ctx: commands.Context):
+        for user in self.banned_set:
+            await ctx.send(f"{user.mention}")
+
+    
+    ##################################################################################################
+    ##################################################################################################
+    ##################################################################################################
 
     @commands.command(
         name="hello",

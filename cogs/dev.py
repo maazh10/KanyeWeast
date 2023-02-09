@@ -95,6 +95,27 @@ class DevelopersOnly(commands.Cog):
                 await ctx.send("Bot hasn't sent a message recently.", delete_after=2)
                 return
 
+    @commands.command(
+            name="ban",
+            brief="Bans mentioned user(s)",
+            help="Bans mentioned user(s) from using commands from the Miscellaneous cog"
+    )
+    async def ban(self, ctx: commands.Context):
+       misc = self.bot.get_cog("Miscellaneous")
+       if misc and ctx.message.mentions:
+           for user in ctx.message.mentions:
+               await misc.ban_user(ctx, user)
+
+    @commands.command(
+            name="unban",
+            brief="Unbans mentioned user(s)",
+            help="Unbans mentioned user(s) from using commands from the Miscellaneous cog"
+    )
+    async def unban(self, ctx: commands.Context):
+       misc = self.bot.get_cog("Miscellaneous")
+       if misc and ctx.message.mentions:
+           for user in ctx.message.mentions:
+               await misc.unban_user(ctx, user)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(DevelopersOnly(bot))
