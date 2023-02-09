@@ -155,7 +155,7 @@ class Users(commands.Cog):
     
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
-        if ctx.author in dev.banned_set:
+        if ctx.author.id in dev.banned_set:
             raise UserBanned(ctx.message.author)
         return True
 

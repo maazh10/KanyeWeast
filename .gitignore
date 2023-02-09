@@ -7,3 +7,4 @@ __pycache__/
 *.py[cod]
 KanyeWeast.code-workspace
 database.db
+banned_users.pkl

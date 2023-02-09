@@ -2,13 +2,15 @@ from discord.ext import commands
 import discord
 import subprocess
 import json
+import pickle
+import os
 
 class DevelopersOnly(commands.Cog):
     """This category is only for dev use. If you're not a dev and try to use you could be banned."""
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.banned_set = set()
+        self.banned_set = self.load_banned_set()
         with open("secrets.json") as f:
             self.keys = json.load(f)
 
@@ -117,16 +119,31 @@ class DevelopersOnly(commands.Cog):
            for user in ctx.message.mentions:
                await self.unban_user(ctx, user)
 
-    async def ban_user(self, ctx: commands.Context, user: discord.abc.User):
-        self.banned_set.add(user)
+    async def ban_user(self, ctx: commands.Context, user: discord.User | discord.Member):
+        self.banned_set.add(user.id)
+        with open("banned_users.pkl", "wb") as f:
+            pickle.dump(self.banned_set, f)
         await ctx.send(f"{user.mention} banned")
 
-    async def unban_user(self, ctx: commands.Context, user: discord.abc.User):
+    async def unban_user(self, ctx: commands.Context, user: discord.User | discord.Member):
         try:
-            self.banned_set.remove(user)
+            self.banned_set.remove(user.id)
+            with open("banned_users.pkl", "wb") as f:
+                pickle.dump(self.banned_set, f)
         except ValueError:
             await ctx.send(f"{user.mention} not in banned set.")
         await ctx.send(f"{user.mention} unbanned")
+
+    def load_banned_set(self) -> set[int]:
+        if not os.path.isfile("banned_users.pkl"):
+            with open("banned_users.pkl", "wb") as f:
+                pickle.dump(set(), f)
+        with open("banned_users.pkl", "rb") as f:
+            try:
+                banned_set = pickle.load(f)
+                return banned_set
+            except EOFError:
+                return set()
 
     @commands.command(
         name="showban",
@@ -135,7 +152,7 @@ class DevelopersOnly(commands.Cog):
     )
     async def showban(self, ctx: commands.Context):
         banned_list = "```"
-        banned_list += "\n".join(map(lambda user: user.display_name, self.banned_set)) if self.banned_set else "No banned users yet."
+        banned_list += "\n".join(map(lambda id: ctx.guild.get_member(id).display_name, self.banned_set)) if self.banned_set else "No banned users yet."
         banned_list += "```"
         await ctx.send(banned_list)
 
