@@ -114,16 +114,6 @@ class Miscellaneous(commands.Cog):
             await ctx.send(f"{user.mention} not in banned set.")
         await ctx.send(f"{user.mention} unbanned")
 
-    @commands.command(
-        name="showban",
-        brief="Show banned users",
-        help="Show banned users",
-    )
-    async def showban(self, ctx: commands.Context):
-        for user in self.banned_set:
-            await ctx.send(f"{user.mention}")
-
-    
     ##################################################################################################
     ##################################################################################################
     ##################################################################################################

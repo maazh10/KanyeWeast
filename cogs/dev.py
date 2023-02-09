@@ -117,5 +117,19 @@ class DevelopersOnly(commands.Cog):
            for user in ctx.message.mentions:
                await misc.unban_user(ctx, user)
 
+    @commands.command(
+        name="showban",
+        brief="Show banned users",
+        help="Show banned users",
+    )
+    async def showban(self, ctx: commands.Context):
+        misc = self.bot.get_cog("Miscellaneous")
+        if misc:
+            banned_set = misc.banned_set
+            banned_list = "```"
+            banned_list += "\n".join(map(lambda user: user.display_name, banned_set))
+            banned_list += "```"
+            await ctx.send(banned_list)
+
 async def setup(bot: commands.Bot):
     await bot.add_cog(DevelopersOnly(bot))
