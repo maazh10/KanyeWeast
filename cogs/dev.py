@@ -15,7 +15,10 @@ class DevelopersOnly(commands.Cog):
             self.keys = json.load(f)
 
     async def cog_check(self, ctx: commands.Context):
-        return await self.bot.is_owner(ctx.author)
+        if not await self.bot.is_owner(ctx.author):
+            await ctx.send("This command is dev only pleb.")
+            return False
+        return True
 
     @commands.Cog.listener()
     async def on_ready(self):
