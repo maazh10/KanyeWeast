@@ -3,4 +3,4 @@ colorthief==0.2.1
 discord.py==2.0.1
 lyricsgenius==3.0.1
 requests==2.28.1
-spotipy==2.20.0
+spotipy>=2.22.1
