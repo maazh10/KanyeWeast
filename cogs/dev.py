@@ -4,6 +4,8 @@ import subprocess
 import json
 import pickle
 import os
+import sys
+import traceback
 
 class DevelopersOnly(commands.Cog):
     """This category is only for dev use. If you're not a dev and try to use you could be banned."""
@@ -15,10 +17,43 @@ class DevelopersOnly(commands.Cog):
             self.keys = json.load(f)
 
     async def cog_check(self, ctx: commands.Context):
-        if not await self.bot.is_owner(ctx.author):
-            await ctx.send("This command is dev only pleb.")
-            return False
-        return True
+        return await self.bot.is_owner(ctx.author)
+
+    ##################################################################################################
+    ####################################### COG ERROR HANDLER ########################################
+    ##################################################################################################
+
+    async def cog_command_error(self, ctx, error: commands.CommandError):
+        if hasattr(ctx.command, "on_error"):
+            return
+
+        ignored = ()
+
+        # Allows us to check for original exceptions raised and sent to CommandInvokeError.
+        # If nothing is found. We keep the exception passed to on_command_error.
+        error = getattr(error, "original", error)
+
+        # Anything in ignored will return and prevent anything happening.
+        if isinstance(error, ignored):
+            return
+
+        if isinstance(error, commands.CheckFailure):
+            await ctx.send("This command is dev-only pleb.")
+            return
+
+        else:
+            # All other Errors not returned come here. And we can just print the default TraceBack.
+            print(
+                "Ignoring exception in command {}:".format(ctx.command), file=sys.stderr
+            )
+            traceback.print_exception(
+                type(error), error, error.__traceback__, file=sys.stderr
+            )
+
+
+    ##################################################################################################
+    ##################################################################################################
+    ##################################################################################################
 
     @commands.Cog.listener()
     async def on_ready(self):
