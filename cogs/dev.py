@@ -133,7 +133,7 @@ class DevelopersOnly(commands.Cog):
             self.banned_set.remove(user.id)
             with open("banned_users.pkl", "wb") as f:
                 pickle.dump(self.banned_set, f)
-        except ValueError:
+        except KeyError:
             await ctx.send(f"{user.mention} not in banned set.")
         await ctx.send(f"{user.mention} unbanned")
 
