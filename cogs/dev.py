@@ -170,6 +170,7 @@ class DevelopersOnly(commands.Cog):
                 pickle.dump(self.banned_set, f)
         except KeyError:
             await ctx.send(f"{user.mention} not in banned set.")
+            return
         await ctx.send(f"{user.mention} unbanned")
 
     def load_banned_set(self) -> set[int]:
