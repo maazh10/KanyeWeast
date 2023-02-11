@@ -88,7 +88,7 @@ class Pictures(commands.Cog):
             if not (
                 homie.startswith(".")
                 or homie == "amogus"
-                or homie == "hbk"
+                or homie == "sad"
                 or homie == "haram"
             )
         ]
