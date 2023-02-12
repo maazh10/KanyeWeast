@@ -190,8 +190,12 @@ class DevelopersOnly(commands.Cog):
         help="Show banned users",
     )
     async def showban(self, ctx: commands.Context):
+        if ctx.guild:
+            name_function = lambda id: ctx.guild.get_member(id).display_name
+        else:
+            name_function = lambda id: self.bot.get_user(id).name
         banned_list = "```"
-        banned_list += "\n".join(map(lambda id: ctx.guild.get_member(id).display_name, self.banned_set)) if self.banned_set else "No banned users yet."
+        banned_list += "\n".join(map(name_function, self.banned_set)) if self.banned_set else "No banned users yet."
         banned_list += "```"
         await ctx.send(banned_list)
 
