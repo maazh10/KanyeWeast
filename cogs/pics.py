@@ -1,4 +1,5 @@
 import discord
+from discord.app_commands import command
 from discord.ext import commands
 from cogs.utils import UserBanned
 
@@ -8,6 +9,8 @@ import requests
 import shutil
 import string
 from pathlib import Path
+import boto3
+import io
 
 import typing
 import sys
@@ -25,6 +28,8 @@ class Pictures(commands.Cog):
         self.pics_directory = os.path.abspath(os.path.join(os.curdir, "pics"))
         self.set_homie_list()
         self.set_prev_homie("Nothing", "yet :(")
+        self.s3 = boto3.resource('s3')
+        self.bucket = self.s3.Bucket("kanyeweastbotpics")
 
     ##################################################################################################
     ####################################### COG ERROR HANDLER ########################################
@@ -358,6 +363,14 @@ class Pictures(commands.Cog):
         else:
             await ctx.send(file=file)
 
+    @commands.command(
+            name="addpics3"
+            )
+    @commands.is_owner()
+    async def addpics3(self, ctx: commands.Context):
+        for attachment in ctx.message.attachments:
+            self.bucket.upload_fileobj(io.BytesIO(await attachment.read()), f"pics/{attachment.filename}")
+            await ctx.send("Uploaded?")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Pictures(bot))
