@@ -1,4 +1,5 @@
 import discord
+
 # from discord.app_commands import command
 from discord.ext import commands
 
@@ -13,6 +14,7 @@ import sqlite3
 import traceback
 import sys
 import typing
+
 
 class Miscellaneous(commands.Cog):
     """Rando stuff."""
@@ -91,7 +93,7 @@ class Miscellaneous(commands.Cog):
     ##################################################################################################
     ######################################## COG BAN CHECK ###########################################
     ##################################################################################################
-    
+
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
         if ctx.author.id in dev.banned_set:
@@ -292,58 +294,6 @@ class Miscellaneous(commands.Cog):
             await ctx.send(f"Request failed with status code {response.status_code}")
 
     @commands.command(
-        name="cat",
-        brief="Sends a cute cat pic",
-        help="Sends a cute cat pic through an API",
-    )
-    async def catpic(self, ctx: commands.Context):
-        r = requests.get("https://api.thecatapi.com/v1/images/search")
-        if r.status_code == 200:
-            data = r.json()[0]
-            embed = discord.Embed(title="Cat", color=discord.Colour.random())
-            embed.set_image(url=data["url"])
-            await ctx.send(embed=embed)
-
-    @commands.command(
-        name="dog",
-        brief="Sends a cute dog pic",
-        help="Sends a cute dog pic through an API",
-    )
-    async def dogpic(self, ctx: commands.Context):
-        r = requests.get("https://api.thedogapi.com/v1/images/search")
-        if r.status_code == 200:
-            data = r.json()[0]
-            embed = discord.Embed(title="Dog", color=discord.Colour.random())
-            embed.set_image(url=data["url"])
-            await ctx.send(embed=embed)
-
-    @commands.command(
-        name="duck",
-        brief="Sends a cute duck pic",
-        help="Sends a cute duck pic through an API",
-    )
-    async def duckpic(self, ctx: commands.Context):
-        r = requests.get("https://random-d.uk/api/v2/random")
-        if r.status_code == 200:
-            data = r.json()
-            embed = discord.Embed(title="Duck", color=discord.Colour.random())
-            embed.set_image(url=data["url"])
-            await ctx.send(embed=embed)
-
-    @commands.command(
-        name="seal",
-        brief="Sends a cute seal pic",
-        help="Sends a cute seal pic through an API",
-    )
-    async def sealpic(self, ctx: commands.Context):
-        seal_num = random.randint(0, 84)
-        embed = discord.Embed(title="Seal", color=discord.Colour.random())
-        embed.set_image(
-            url=f"https://raw.githubusercontent.com/FocaBot/random-seal/master/seals/{seal_num:04}.jpg"
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command(
         name="fuck",
         brief="fuck",
         help="fuck",
@@ -385,6 +335,57 @@ class Miscellaneous(commands.Cog):
             return
         setup = json_data["joke"]
         await ctx.send(setup)
+
+    @commands.command(
+        name="",
+        brief="Sends a cute animal pic",
+        help="Sends a cute animal pic through an API",
+    )
+    async def animal(self, ctx: commands.Context, animal: str):
+        animals = [
+            "bird",
+            "cat",
+            "dog",
+            "fox",
+            "kangaroo",
+            "koala",
+            "panda",
+            "raccoon",
+            "whale",
+            "seal",
+            "duck",
+            "whale",
+        ]
+        if animal == "list":
+            msg = "```\n"
+            for animal in animals:
+                msg += animal + "\n"
+            msg += "```"
+            await ctx.send(msg)
+            return
+        if animal not in animals:
+            await ctx.send(f"No pics for {animal}")
+            return
+        embed = discord.Embed(title=animal.capitalize(), color=discord.Colour.random())
+        if animal == "seal":
+            seal_num = random.randint(0, 84)
+            embed.set_image(
+                url=f"https://raw.githubusercontent.com/FocaBot/random-seal/master/seals/{seal_num:04}.jpg"
+            )
+        elif animal == "duck":
+            r = requests.get("https://random-d.uk/api/v2/random")
+            data = r.json()
+            embed.set_image(url=data["url"])
+        elif animal == "whale":
+            r = requests.get("https://some-random-api.ml/img/whale")
+            data = r.json()
+            embed.set_image(url=data["link"])
+        else:
+            r = requests.get(f"https://some-random-api.ml/animal/{animal}")
+            data = r.json()
+            embed.set_image(url=data["image"])
+            embed.set_footer(text=data["fact"])
+        await ctx.send(embed=embed)
 
 
 async def setup(bot: commands.Bot):
