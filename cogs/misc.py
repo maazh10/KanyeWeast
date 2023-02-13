@@ -338,10 +338,10 @@ class Miscellaneous(commands.Cog):
 
     @commands.command(
         name="",
-        brief="Sends a cute animal pic",
-        help="Sends a cute animal pic through an API",
+        brief="Sends a cute animal pic.",
+        help="Sends a cute animal pic through an API. Do &animal list for a list of animals. If no animal is specified a random one will be picked.",
     )
-    async def animal(self, ctx: commands.Context, animal: str):
+    async def animal(self, ctx: commands.Context, animal: str = ""):
         animals = [
             "bird",
             "cat",
@@ -356,6 +356,8 @@ class Miscellaneous(commands.Cog):
             "duck",
             "whale",
         ]
+        if not animal:
+            animal = random.choice(animals)
         if animal == "list":
             msg = "```\n"
             for animal in animals:
@@ -386,6 +388,76 @@ class Miscellaneous(commands.Cog):
             embed.set_image(url=data["image"])
             embed.set_footer(text=data["fact"])
         await ctx.send(embed=embed)
+
+    @commands.command(
+        name="",
+        brief="Send user's avatar back with overlay.",
+        help="Send user's avatar back with overlay. Do &overlay list for a list of overlays. If no overlay is specified a random one will be picked.",
+    )
+    async def overlay(
+        self, ctx: commands.Context, overlay: str = "", user: discord.User = None
+    ):
+        overlays = ["comrade", "gay", "glass", "jail", "passed", "triggered", "wasted"]
+        if not overlay:
+            overlay = random.choice(overlays)
+        if overlay == "list":
+            msg = "```\n"
+            for overlay in overlays:
+                msg += overlay + "\n"
+            msg += "```"
+            await ctx.send(msg)
+            return
+        if overlay not in overlays:
+            await ctx.send(f"No overlay for {overlay}")
+            return
+        avatar = user.avatar.url if user else ctx.author.avatar.url
+        await ctx.send(
+            f"https://some-random-api.ml/canvas/overlay/{overlay}?avatar={avatar}"
+        )
+
+    @commands.command(
+        name="",
+        brief="Sends user's avatar back with a canvas.",
+        help="Sends user's avatar back with a canvas. Do &canvas list for a list of canvases. If no canvas is specified a random one will be picked.",
+    )
+    async def canvas(
+        self, ctx: commands.Context, canvas: str = "", user: discord.User = None
+    ):
+        canvases = [
+            "bisexual",
+            "blur",
+            "circle",
+            "heart",
+            "horny",
+            "its-so-stupid",
+            "jpg",
+            "lesbian",
+            "lgbt",
+            "lolice",
+            "nonbinary",
+            "pansexual",
+            "pixelate",
+            "simpcard",
+            "spin",
+            "tonikawa",
+            "transgender",
+        ]
+        if not canvas:
+            canvas = random.choice(canvases)
+        if canvas == "list":
+            msg = "```\n"
+            for canvas in canvases:
+                msg += canvas + "\n"
+            msg += "```"
+            await ctx.send(msg)
+            return
+        if canvas not in canvases:
+            await ctx.send(f"No canvas for {canvas}")
+            return
+        avatar = user.avatar.url if user else ctx.author.avatar.url
+        await ctx.send(
+            f"https://some-random-api.ml/canvas/misc/{canvas}?avatar={avatar}"
+        )
 
 
 async def setup(bot: commands.Bot):
