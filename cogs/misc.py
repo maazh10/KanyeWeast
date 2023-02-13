@@ -454,7 +454,10 @@ class Miscellaneous(commands.Cog):
         if canvas not in canvases:
             await ctx.send(f"No canvas for {canvas}")
             return
-        avatar = user.avatar.url if user else ctx.author.avatar.url
+        try:
+            avatar = user.avatar.url if user else ctx.author.avatar.url
+        except AttributeError:
+            avatar = user.default_avatar.url if user else ctx.author.default_avatar.url
         await ctx.send(
             f"https://some-random-api.ml/canvas/misc/{canvas}?avatar={avatar}"
         )
