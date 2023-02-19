@@ -114,11 +114,6 @@ class Pictures(commands.Cog):
         msg += "```"
         await ctx.send(msg)
 
-    # @commands.command(
-    #     name="homienum",
-    #     brief="Sends nth pic of homie from modification date",
-    #     help="Use &homienum name [num] to get specific pic, Gets latest pic by default.",
-    # )
     async def get_num(self, ctx: commands.Context, name: str = "", num: int = -1):
         if name == "":
             await ctx.send("Must provide name.")
