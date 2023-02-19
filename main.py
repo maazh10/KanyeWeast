@@ -30,7 +30,7 @@ async def on_message(message: discord.Message):
         return
     what_responses = {"what", "wat", "wht", "wot", "whot", "waht"}
     if (
-        not (await bot.is_owner(message.author) and not message.author.id == int(keys["ID_TINA"]))
+        not (await bot.is_owner(message.author) or message.author.id == int(keys["ID_TINA"]))
         and message.content.lower() in what_responses
     ):
         await message.reply("smb")
