@@ -144,7 +144,7 @@ class Miscellaneous(commands.Cog):
         assert self.bot.user is not None
         assert self.bot.user.avatar
         pfp_url = self.bot.user.avatar.url
-        embed.color = await get_color(pfp_url)
+        embed.color = get_color(pfp_url)
         embed.set_author(name="Kanye West", icon_url=pfp_url)
         embed.description = "[{}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)".format(
             self.get_quote()
