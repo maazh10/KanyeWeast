@@ -82,33 +82,24 @@ async def on_message_delete(message):
     help="Retrieves and sends the most recently deleted message in the server.",
 )
 async def snipe(ctx: commands.Context):
+    bob_proxy_url = None
     try:
-        bob_proxy_url, contents, author, channel_name, time, color = bot.sniped_messages[
-            ctx.guild.id
-        ]
-    except:
-        try:
+        if len(bot.sniped_messages[ctx.guild.id]) == 6:
+            bob_proxy_url, contents, author, channel_name, time, color = bot.sniped_messages[
+                ctx.guild.id
+            ]
+        else:
             contents, author, channel_name, time, color = bot.sniped_messages[ctx.guild.id]
-        except:
-            await ctx.channel.send("Couldn't find a message to snipe!")
-            return
-    try:
-        pfp_url = author.avatar.url
-        embed = discord.Embed(
-            description=contents, color=color, timestamp=time
-        )
-        embed.set_image(url=bob_proxy_url)
-        embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
-        embed.set_footer(text=f"Deleted in : #{channel_name}")
-        await ctx.channel.send(embed=embed)
     except:
-        pfp_url = author.avatar.url
-        embed = discord.Embed(
-            description=contents, color=color, timestamp=time
-        )
-        embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
-        embed.set_footer(text=f"Deleted in : #{channel_name}")
-        await ctx.channel.send(embed=embed)
+        await ctx.channel.send("Couldn't find a message to snipe!")
+        return
+    pfp_url = author.avatar.url
+    embed = discord.Embed(description=contents, color=color, timestamp=time)
+    embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
+    embed.set_footer(text=f"Deleted in : #{channel_name}")
+    if bob_proxy_url is not None:
+        embed.set_image(url=bob_proxy_url)
+    await ctx.channel.send(embed=embed)
 
 
 async def load_cogs():
