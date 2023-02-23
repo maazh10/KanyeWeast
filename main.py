@@ -20,10 +20,12 @@ owners = {int(keys["ID_BENNY"]), int(keys["ID_STARBOY"])}
 #     case_insensitive=True,
 # )
 
+
 class Bot_With_Sniped_Messages(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.sniped_messages = {}
+
 
 bot = Bot_With_Sniped_Messages(
     command_prefix="&",
@@ -32,6 +34,7 @@ bot = Bot_With_Sniped_Messages(
     intents=discord.Intents.all(),
     case_insensitive=True,
 )
+
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -42,13 +45,17 @@ async def on_message(message: discord.Message):
         return
     what_responses = {"what", "wat", "wht", "wot", "whot", "waht"}
     if (
-        not (await bot.is_owner(message.author) or message.author.id == int(keys["ID_TINA"]))
+        not (
+            await bot.is_owner(message.author)
+            or message.author.id == int(keys["ID_TINA"])
+        )
         and message.content.lower() in what_responses
     ):
         await message.reply("smb")
     if message.author.id == 630492967018430489:
         if "<:lemean:903117276587376710>" in message.content:
             await message.reply("<:lemean:903117276587376710>")
+
 
 bot.sniped_messages = {}
 
@@ -64,7 +71,7 @@ async def on_message_delete(message):
             message.author,
             message.channel.name,
             message.created_at,
-            color
+            color,
         )
     else:
         bot.sniped_messages[message.guild.id] = (
@@ -72,7 +79,7 @@ async def on_message_delete(message):
             message.author,
             message.channel.name,
             message.created_at,
-            color
+            color,
         )
 
 
@@ -83,13 +90,23 @@ async def on_message_delete(message):
 )
 async def snipe(ctx: commands.Context):
     bob_proxy_url = None
+    if not ctx.guild:
+        await ctx.channel.send("This command can only be used in a server!")
+        return
     try:
         if len(bot.sniped_messages[ctx.guild.id]) == 6:
-            bob_proxy_url, contents, author, channel_name, time, color = bot.sniped_messages[
+            (
+                bob_proxy_url,
+                contents,
+                author,
+                channel_name,
+                time,
+                color,
+            ) = bot.sniped_messages[ctx.guild.id]
+        else:
+            contents, author, channel_name, time, color = bot.sniped_messages[
                 ctx.guild.id
             ]
-        else:
-            contents, author, channel_name, time, color = bot.sniped_messages[ctx.guild.id]
     except:
         await ctx.channel.send("Couldn't find a message to snipe!")
         return
