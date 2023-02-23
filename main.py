@@ -12,14 +12,26 @@ with open("secrets.json") as f:
 help_command = commands.DefaultHelpCommand(no_category="Commands")
 
 owners = {int(keys["ID_BENNY"]), int(keys["ID_STARBOY"])}
-bot: commands.Bot = commands.Bot(
+# bot: commands.Bot = commands.Bot(
+#     command_prefix="&",
+#     help_command=help_command,
+#     owner_ids=owners,
+#     intents=discord.Intents.all(),
+#     case_insensitive=True,
+# )
+
+class Bot_With_Sniped_Messages(commands.Bot):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.sniped_messages = {}
+
+bot = Bot_With_Sniped_Messages(
     command_prefix="&",
     help_command=help_command,
     owner_ids=owners,
     intents=discord.Intents.all(),
     case_insensitive=True,
 )
-
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -43,6 +55,7 @@ bot.sniped_messages = {}
 
 @bot.event
 async def on_message_delete(message):
+    color = get_color(message.author.avatar.url)
     if message.attachments:
         bob = message.attachments[0]
         bot.sniped_messages[message.guild.id] = (
@@ -51,6 +64,7 @@ async def on_message_delete(message):
             message.author,
             message.channel.name,
             message.created_at,
+            color
         )
     else:
         bot.sniped_messages[message.guild.id] = (
@@ -58,6 +72,7 @@ async def on_message_delete(message):
             message.author,
             message.channel.name,
             message.created_at,
+            color
         )
 
 
@@ -68,19 +83,19 @@ async def on_message_delete(message):
 )
 async def snipe(ctx: commands.Context):
     try:
-        bob_proxy_url, contents, author, channel_name, time = bot.sniped_messages[
+        bob_proxy_url, contents, author, channel_name, time, color = bot.sniped_messages[
             ctx.guild.id
         ]
     except:
         try:
-            contents, author, channel_name, time = bot.sniped_messages[ctx.guild.id]
+            contents, author, channel_name, time, color = bot.sniped_messages[ctx.guild.id]
         except:
             await ctx.channel.send("Couldn't find a message to snipe!")
             return
     try:
         pfp_url = author.avatar.url
         embed = discord.Embed(
-            description=contents, color=get_color(pfp_url), timestamp=time
+            description=contents, color=color, timestamp=time
         )
         embed.set_image(url=bob_proxy_url)
         embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
@@ -89,7 +104,7 @@ async def snipe(ctx: commands.Context):
     except:
         pfp_url = author.avatar.url
         embed = discord.Embed(
-            description=contents, color=get_color(pfp_url), timestamp=time
+            description=contents, color=color, timestamp=time
         )
         embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
         embed.set_footer(text=f"Deleted in : #{channel_name}")

@@ -5,6 +5,8 @@ import requests
 from discord.ext import commands
 from PIL import Image
 
+import time
+
 def get_color_old(img_url: str):
     color_thief = ColorThief(requests.get(img_url, stream=True).raw)
     dominant_color = color_thief.get_color(quality=1)
@@ -20,13 +22,12 @@ def get_color(image_url: str, palette_size = 16) -> int:
     # https://stackoverflow.com/questions/3241929/python-find-dominant-most-common-color-in-an-image
     image = Image.open(requests.get(image_url, stream=True).raw)
     image.thumbnail((100, 100))
-    paletted = image.convert('P', palette=Image.ADAPTIVE, colors=palette_size)
+    paletted = image.convert('P', palette=Image.Palette.ADAPTIVE, colors=palette_size)
 
     palette = paletted.getpalette()
     color_counts = sorted(paletted.getcolors(), reverse=True)
     palette_index = color_counts[0][1]
     dominant_color = palette[palette_index*3:palette_index*3+3]
-
     return int(f"0x{dominant_color[0]:02x}{dominant_color[1]:02x}{dominant_color[2]:02x}", 16)
         
 
