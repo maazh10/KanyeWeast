@@ -94,19 +94,11 @@ async def snipe(ctx: commands.Context):
         await ctx.channel.send("This command can only be used in a server!")
         return
     try:
+        (contents, author, channel_name, time, color) = bot.sniped_messages[
+            ctx.guild.id
+        ][-5:]
         if len(bot.sniped_messages[ctx.guild.id]) == 6:
-            (
-                bob_proxy_url,
-                contents,
-                author,
-                channel_name,
-                time,
-                color,
-            ) = bot.sniped_messages[ctx.guild.id]
-        else:
-            contents, author, channel_name, time, color = bot.sniped_messages[
-                ctx.guild.id
-            ]
+            bob_proxy_url = bot.sniped_messages[ctx.guild.id][0]
     except:
         await ctx.channel.send("Couldn't find a message to snipe!")
         return
