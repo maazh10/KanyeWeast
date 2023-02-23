@@ -7,6 +7,8 @@ import os
 import sys
 import traceback
 
+from cogs.utils import get_color
+
 class DevelopersOnly(commands.Cog):
     """This category is only for dev use. If you're not a dev and try to use you could be banned."""
 
@@ -64,6 +66,20 @@ class DevelopersOnly(commands.Cog):
         await ctx.send("Shutting down...")
         exit()
 
+    @commands.command(
+        name="test1",
+        brief="Test command.",
+        help="Test command.",
+        aliases=["t1"],
+    )
+    async def test1(self, ctx: commands.Context):
+        assert ctx.author.avatar is not None
+        pfp_url = ctx.author.avatar.url
+        embed = discord.Embed(description="test message" , color=get_color(pfp_url), timestamp=ctx.message.created_at)
+        embed.set_image(url=pfp_url)
+        embed.set_author(name=f"{ctx.author.name}#{ctx.author.discriminator}", icon_url=pfp_url)
+        await ctx.channel.send(embed=embed)
+            
     @commands.command(
         name="restart",
         brief="Restarts bot, ***Dev use only***",
