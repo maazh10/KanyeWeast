@@ -59,7 +59,7 @@ async def on_message_delete(message):
     color = get_color(message.author.avatar.url)
     sniped_content = (message.content, message.author, message.channel.name, message.created_at, color)
     if message.attachments:
-       sniped_content = message.attachments[0].proxy_url + sniped_content
+       sniped_content = (message.attachments[0].proxy_url,) + sniped_content
     if len(bot.sniped_messages[message.guild.id]) == bot.sniped_len:
         bot.sniped_messages[message.guild.id].pop(0)
     bot.sniped_messages[message.guild.id].append(sniped_content)
