@@ -1,8 +1,8 @@
+import asyncio
+import json
+
 import discord
 from discord.ext import commands
-import json
-import asyncio
-from random import randint
 
 from cogs.utils import get_color
 
@@ -12,19 +12,13 @@ with open("secrets.json") as f:
 help_command = commands.DefaultHelpCommand(no_category="Commands")
 
 owners = {int(keys["ID_BENNY"]), int(keys["ID_STARBOY"])}
-# bot: commands.Bot = commands.Bot(
-#     command_prefix="&",
-#     help_command=help_command,
-#     owner_ids=owners,
-#     intents=discord.Intents.all(),
-#     case_insensitive=True,
-# )
 
 
 class Bot_With_Sniped_Messages(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.sniped_messages = {}
+        self.sniped_len = 5
 
 
 bot = Bot_With_Sniped_Messages(
@@ -39,7 +33,7 @@ bot = Bot_With_Sniped_Messages(
 @bot.event
 async def on_message(message: discord.Message):
     await bot.process_commands(message)
-    if bot.user == None:
+    if bot.user is not None:
         return
     if message.author.id == bot.user.id:
         return
@@ -57,51 +51,23 @@ async def on_message(message: discord.Message):
             await message.reply("<:lemean:903117276587376710>")
 
 
-bot.sniped_messages = {}
-
-
 @bot.event
 async def on_message_delete(message):
+    if bot.sniped_messages.get(message.guild.id) is None:
+        bot.sniped_messages[message.guild.id] = []
     color = get_color(message.author.avatar.url)
+    sniped_content = (message.content, message.author, message.channel.name, message.created_at, color)
     if message.attachments:
-        bob = message.attachments[0]
-        bot.sniped_messages[message.guild.id] = (
-            bob.proxy_url,
-            message.content,
-            message.author,
-            message.channel.name,
-            message.created_at,
-            color,
-        )
-    else:
-        bot.sniped_messages[message.guild.id] = (
-            message.content,
-            message.author,
-            message.channel.name,
-            message.created_at,
-            color,
-        )
+       sniped_content = message.attachments[0].proxy_url + sniped_content
+    if len(bot.sniped_messages[message.guild.id]) == bot.sniped_len:
+        bot.sniped_messages[message.guild.id].pop(0)
+    bot.sniped_messages[message.guild.id].append(sniped_content)
 
-
-@bot.command(
-    name="snipe",
-    brief="Snipes last deleted message in channel.",
-    help="Retrieves and sends the most recently deleted message in the server.",
-)
-async def snipe(ctx: commands.Context):
+async def build_sniped_message(ctx: commands.Context, sniped_content: tuple):
     bob_proxy_url = None
-    if not ctx.guild:
-        await ctx.channel.send("This command can only be used in a server!")
-        return
-    try:
-        (contents, author, channel_name, time, color) = bot.sniped_messages[
-            ctx.guild.id
-        ][-5:]
-        if len(bot.sniped_messages[ctx.guild.id]) == 6:
-            bob_proxy_url = bot.sniped_messages[ctx.guild.id][0]
-    except:
-        await ctx.channel.send("Couldn't find a message to snipe!")
-        return
+    if len(sniped_content) == 6:
+        bob_proxy_url = sniped_content[0]
+    (contents, author, channel_name, time, color) = sniped_content[-5:]
     pfp_url = author.avatar.url
     embed = discord.Embed(description=contents, color=color, timestamp=time)
     embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
@@ -110,6 +76,49 @@ async def snipe(ctx: commands.Context):
         embed.set_image(url=bob_proxy_url)
     await ctx.channel.send(embed=embed)
 
+@commands.is_owner()
+@bot.command(
+    name="setsnipenum",
+    brief="Sets the number of snipes to save",
+    help="Sets the number of snipes to save"
+)
+async def setsnipenum(ctx: commands.Context, num: commands.Range[int, 0, 20] = 5):
+    bot.sniped_len = num
+    await ctx.send(f"Snipe number set to {num}")
+
+def ordinal(x):
+            return [
+                "1st",
+                "2nd",
+                "3rd",
+                "4th",
+                "5th",][abs(x) - 1]
+
+@bot.command(
+    name="snipe",
+    brief="Snipes last deleted message in channel.",
+    help="Retrieves and sends the most recently deleted message in the server.",
+)
+async def snipe(ctx: commands.Context, snipe_num: commands.Range[int, -bot.sniped_len, -1] = -1):
+    if not ctx.guild:
+        await ctx.channel.send("This command can only be used in a server!")
+        return
+    try:
+        sniped_content = bot.sniped_messages[ctx.guild.id][snipe_num]
+        await build_sniped_message(ctx, sniped_content)
+    except IndexError:
+        await ctx.channel.send(f"Couldn't find the {ordinal(snipe_num)} deleted message.")
+        return
+    except KeyError:
+        await ctx.channel.send("Couldn't find a message to snipe!")
+        return
+
+@snipe.error
+async def snipe_on_error(ctx: commands.Context, error):
+    if isinstance(error, commands.BadArgument):
+        await ctx.channel.send(f"Please enter a valid number between -{bot.sniped_len} and -1.")
+        return
+    raise error
 
 async def load_cogs():
     """Loads cogs for bot"""
@@ -118,9 +127,5 @@ async def load_cogs():
         await bot.load_extension(cog)
 
 
-async def load_cogs_wrapper():
-    await load_cogs()
-
-
-asyncio.run(load_cogs_wrapper())
+asyncio.run(load_cogs())
 bot.run(keys["TOKEN"])
