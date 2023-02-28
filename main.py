@@ -1,5 +1,6 @@
 import asyncio
 import json
+from operator import le
 
 import discord
 from discord.ext import commands
@@ -82,9 +83,9 @@ async def build_sniped_message(ctx: commands.Context, sniped_content: tuple):
     brief="Sets the number of snipes to save",
     help="Sets the number of snipes to save"
 )
-async def setsnipenum(ctx: commands.Context, num: commands.Range[int, 0, 20] = 5):
-    bot.sniped_len = num
-    await ctx.send(f"Snipe number set to {num}")
+async def setsnipelen(ctx: commands.Context, len: commands.Range[int, 0, 20] = 5):
+    bot.sniped_len = len
+    await ctx.send(f"Snipe number set to {len}")
 
 def ordinal(x):
             return [
