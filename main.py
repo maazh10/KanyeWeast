@@ -65,16 +65,16 @@ async def on_message_delete(message):
     bot.sniped_messages[message.guild.id].append(sniped_content)
 
 async def build_sniped_message(ctx: commands.Context, sniped_content: tuple):
-    bob_proxy_url = None
+    proxy_url = None
     if len(sniped_content) == 6:
-        bob_proxy_url = sniped_content[0]
+        proxy_url = sniped_content[0]
     (contents, author, channel_name, time, color) = sniped_content[-5:]
     pfp_url = author.avatar.url
     embed = discord.Embed(description=contents, color=color, timestamp=time)
     embed.set_author(name=f"{author.name}#{author.discriminator}", icon_url=pfp_url)
     embed.set_footer(text=f"Deleted in : #{channel_name}")
-    if bob_proxy_url is not None:
-        embed.set_image(url=bob_proxy_url)
+    if proxy_url is not None:
+        embed.set_image(url=proxy_url)
     await ctx.channel.send(embed=embed)
 
 @commands.is_owner()
