@@ -1,6 +1,5 @@
 import asyncio
 import json
-from operator import le
 
 import discord
 from discord.ext import commands
@@ -57,12 +56,19 @@ async def on_message_delete(message):
     if bot.sniped_messages.get(message.guild.id) is None:
         bot.sniped_messages[message.guild.id] = []
     color = get_color(message.author.avatar.url)
-    sniped_content = (message.content, message.author, message.channel.name, message.created_at, color)
+    sniped_content = (
+        message.content,
+        message.author,
+        message.channel.name,
+        message.created_at,
+        color,
+    )
     if message.attachments:
-       sniped_content = (message.attachments[0].proxy_url,) + sniped_content
+        sniped_content = (message.attachments[0].proxy_url,) + sniped_content
     if len(bot.sniped_messages[message.guild.id]) == bot.sniped_len:
         bot.sniped_messages[message.guild.id].pop(0)
     bot.sniped_messages[message.guild.id].append(sniped_content)
+
 
 async def build_sniped_message(ctx: commands.Context, sniped_content: tuple):
     proxy_url = None
@@ -77,30 +83,36 @@ async def build_sniped_message(ctx: commands.Context, sniped_content: tuple):
         embed.set_image(url=proxy_url)
     await ctx.channel.send(embed=embed)
 
+
 @commands.is_owner()
 @bot.command(
     name="setsnipenum",
     brief="Sets the number of snipes to save",
-    help="Sets the number of snipes to save"
+    help="Sets the number of snipes to save",
 )
 async def setsnipelen(ctx: commands.Context, len: commands.Range[int, 0, 20] = 5):
     bot.sniped_len = len
     await ctx.send(f"Snipe number set to {len}")
 
+
 def ordinal(x):
-            return [
-                "1st",
-                "2nd",
-                "3rd",
-                "4th",
-                "5th",][abs(x) - 1]
+    return [
+        "1st",
+        "2nd",
+        "3rd",
+        "4th",
+        "5th",
+    ][abs(x) - 1]
+
 
 @bot.command(
     name="snipe",
     brief="Snipes last deleted message in channel.",
     help="Retrieves and sends the most recently deleted message in the server.",
 )
-async def snipe(ctx: commands.Context, snipe_num: commands.Range[int, -bot.sniped_len, -1] = -1):
+async def snipe(
+    ctx: commands.Context, snipe_num: commands.Range[int, -bot.sniped_len, -1] = -1
+):
     if not ctx.guild:
         await ctx.channel.send("This command can only be used in a server!")
         return
@@ -108,18 +120,24 @@ async def snipe(ctx: commands.Context, snipe_num: commands.Range[int, -bot.snipe
         sniped_content = bot.sniped_messages[ctx.guild.id][snipe_num]
         await build_sniped_message(ctx, sniped_content)
     except IndexError:
-        await ctx.channel.send(f"Couldn't find the {ordinal(snipe_num)} deleted message.")
+        await ctx.channel.send(
+            f"Couldn't find the {ordinal(snipe_num)} deleted message."
+        )
         return
     except KeyError:
         await ctx.channel.send("Couldn't find a message to snipe!")
         return
 
+
 @snipe.error
 async def snipe_on_error(ctx: commands.Context, error):
     if isinstance(error, commands.BadArgument):
-        await ctx.channel.send(f"Please enter a valid number between -{bot.sniped_len} and -1.")
+        await ctx.channel.send(
+            f"Please enter a valid number between -{bot.sniped_len} and -1."
+        )
         return
     raise error
+
 
 async def load_cogs():
     """Loads cogs for bot"""

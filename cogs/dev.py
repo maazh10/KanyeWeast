@@ -1,11 +1,12 @@
-from discord.ext import commands
-import discord
-import subprocess
 import json
-import pickle
 import os
+import pickle
+import subprocess
 import sys
 import traceback
+
+import discord
+from discord.ext import commands
 
 from cogs.utils import get_color
 
@@ -73,12 +74,10 @@ class DevelopersOnly(commands.Cog):
         aliases=["t1"],
     )
     async def test1(self, ctx: commands.Context):
-        assert ctx.author.avatar is not None
-        pfp_url = ctx.author.avatar.url
-        embed = discord.Embed(description="test message" , color=get_color(pfp_url), timestamp=ctx.message.created_at)
-        embed.set_image(url=pfp_url)
-        embed.set_author(name=f"{ctx.author.name}#{ctx.author.discriminator}", icon_url=pfp_url)
-        await ctx.channel.send(embed=embed)
+        banned_set = f"{self.banned_set = }"
+        print(f"{banned_set}")
+        await ctx.send(f"```{banned_set}```")
+        
             
     @commands.command(
         name="restart",
@@ -210,9 +209,10 @@ class DevelopersOnly(commands.Cog):
             name_function = lambda id: ctx.guild.get_member(id).display_name
         else:
             name_function = lambda id: self.bot.get_user(id).name
-        banned_list = "```"
+        banned_list = "```\n"
         banned_list += "\n".join(map(name_function, self.banned_set)) if self.banned_set else "No banned users yet."
-        banned_list += "```"
+        banned_list += "\n```"
+        print(banned_list)
         await ctx.send(banned_list)
 
 async def setup(bot: commands.Bot):
