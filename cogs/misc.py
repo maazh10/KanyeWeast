@@ -459,6 +459,14 @@ class Miscellaneous(commands.Cog):
             f"https://some-random-api.ml/canvas/misc/{canvas}?avatar={avatar}"
         )
 
+    @commands.command(
+        name="donate",
+        brief="Sends a link to donate to the bot.",
+        help="Sends a link to donate to the bot.",
+    )
+    async def donate(self, ctx: commands.Context):
+        await ctx.send("https://www.buymeacoffee.com/maazandbenny")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
