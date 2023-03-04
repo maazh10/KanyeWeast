@@ -200,6 +200,7 @@ class Users(commands.Cog):
                 )
         await ctx.send("Have a nice day :kissing_heart:")
 
+
     @commands.command(
         name="annoy",
         brief="Annoys mentioned user",
@@ -216,6 +217,9 @@ class Users(commands.Cog):
 
     @annoy_parse.error
     async def annoy_error(self, ctx: commands.Context, e: commands.CommandError):
+        if isinstance(e, UserBanned):
+            await ctx.send("You are banned.")
+            return
         if isinstance(e, commands.RangeError):
             await ctx.send("Specified number is out of range")
         if isinstance(e, commands.BadArgument):
