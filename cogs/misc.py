@@ -14,6 +14,7 @@ import sqlite3
 import traceback
 import sys
 import typing
+import openai
 
 
 class Miscellaneous(commands.Cog):
@@ -22,6 +23,8 @@ class Miscellaneous(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.banned_set = set()
+        with open("secrets.json") as f:
+            self.keys = json.load(f)
 
     def get_quote(self):
         response = requests.get("https://api.kanye.rest")
@@ -145,7 +148,9 @@ class Miscellaneous(commands.Cog):
         assert self.bot.user.avatar is not None
         embed.color = 3348751
         embed.set_author(name="Kanye West", icon_url=self.bot.user.avatar.url)
-        embed.description = f"[{self.get_quote()}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
+        embed.description = (
+            f"[{self.get_quote()}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
+        )
         await ctx.send(embed=embed)
 
     @commands.command(
@@ -466,6 +471,26 @@ class Miscellaneous(commands.Cog):
     )
     async def donate(self, ctx: commands.Context):
         await ctx.send("https://www.buymeacoffee.com/maazandbenny")
+
+    @commands.command(
+        name="",
+        brief="Answers queries using GPT-3.5-turbo model.",
+        help="Answers queries using GPT-3.5-turbo model i.e. chatGPT from OpenAI. You can use this to ask questions, get advice, or just have a conversation with the bot.",
+    )
+    async def gpt(self, ctx: commands.Context, *prompt_list: str):
+        prompt = " ".join(prompt_list)
+        async with ctx.typing():
+            openai.api_key = self.keys["OPENAI_API_KEY"]
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+            )
+            await ctx.send(completion.choices[0].message.content)
 
 
 async def setup(bot: commands.Bot):
