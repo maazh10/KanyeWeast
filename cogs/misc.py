@@ -492,9 +492,12 @@ class Miscellaneous(commands.Cog):
             )
             if len(completion.choices[0].message.content) > 2000:
                 for i in range(0, len(completion.choices[0].message.content), 2000):
-                    await ctx.send(completion.choices[0].message.content[i : i + 2000])
+
+                    await ctx.message.reply(
+                        completion.choices[0].message.content[i : i + 2000]
+                    )
             else:
-                await ctx.send(completion.choices[0].message.content)
+                await ctx.message.reply(completion.choices[0].message.content)
 
 
 async def setup(bot: commands.Bot):

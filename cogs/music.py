@@ -53,7 +53,6 @@ class Music(commands.Cog):
                 type(error), error, error.__traceback__, file=sys.stderr
             )
 
-
     ##################################################################################################
     ######################################## COG BAN CHECK ###########################################
     ##################################################################################################
@@ -237,14 +236,14 @@ class Music(commands.Cog):
         return lyric
 
     async def get_song_info(self, to_search: str):
-        genius = lyricsgenius.Genius(keys["GENIUS_TOKEN"])
+        genius = lyricsgenius.Genius(self.keys["GENIUS_TOKEN"])
         song = genius.search_song(to_search)
         lyrics = self.clean_lyric_footer(song.lyrics)
         return {
             "name": song.full_title,
             "url": song.url,
             "lyrics": lyrics,
-            "color": await get_color(song.header_image_thumbnail_url),
+            "color": get_color(song.header_image_thumbnail_url),
             "thumbnail": song.header_image_thumbnail_url,
         }
 
