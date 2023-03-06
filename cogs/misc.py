@@ -15,6 +15,7 @@ import traceback
 import sys
 import typing
 import openai
+import asyncio
 
 
 class Miscellaneous(commands.Cog):
@@ -477,17 +478,26 @@ class Miscellaneous(commands.Cog):
         brief="Answers queries using GPT-3.5-turbo model.",
         help="Answers queries using GPT-3.5-turbo model i.e. chatGPT from OpenAI. You can use this to ask questions, get advice, or just have a conversation with the bot.",
     )
-    async def gpt(self, ctx: commands.Context, *, prompt: str):
+    async def gpt(self, ctx: commands.Context, *, prompt: str, msg_context: list = []):
+        if not msg_context:
+            msg_context = [
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ]
+        else:
+            msg_context.append(
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            )
         async with ctx.typing():
             openai.api_key = self.keys["OPENAI_API_KEY"]
             completion = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ],
+                messages=msg_context,
             )
             if len(completion.choices[0].message.content) > 2000:
                 for i in range(0, len(completion.choices[0].message.content), 2000):
@@ -500,8 +510,11 @@ class Miscellaneous(commands.Cog):
                             completion.choices[0].message.content[:2000]
                         )
             else:
-                await ctx.message.reply(completion.choices[0].message.content)
-
+                msg = await ctx.message.reply(completion.choices[0].message.content)
+        check = lambda m: m.channel == ctx.channel and m.reference.message_id == msg.id
+        reply = await self.bot.wait_for("message", check=check, timeout=60.0)
+        if reply:
+            await ctx.invoke(self.gpt, prompt=reply.content, msg_context=msg_context)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
