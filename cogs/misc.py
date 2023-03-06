@@ -476,9 +476,16 @@ class Miscellaneous(commands.Cog):
     @commands.command(
         name="",
         brief="Answers queries using GPT-3.5-turbo model.",
-        help="Answers queries using GPT-3.5-turbo model i.e. chatGPT from OpenAI. You can use this to ask questions, get advice, or just have a conversation with the bot.",
+        help="Answers queries using GPT-3.5-turbo model i.e. chatGPT from OpenAI. You can use this to ask questions, get advice, or just have a conversation with the bot. Use &gpt {query} to get a response, to continue a conversation with previous context just reply to the bot's message with further queries. You have 120 seconds to reply to the bot's message.",
     )
-    async def gpt(self, ctx: commands.Context, *, prompt: str, msg_context: list = []):
+    async def gpt(
+        self,
+        ctx: commands.Context,
+        *,
+        prompt: str,
+        msg_context: list = [],
+        cur_msg: discord.Message = None,
+    ):
         if not msg_context:
             msg_context = [
                 {
@@ -486,6 +493,7 @@ class Miscellaneous(commands.Cog):
                     "content": prompt,
                 }
             ]
+            cur_msg = ctx.message
         else:
             msg_context.append(
                 {
@@ -499,26 +507,27 @@ class Miscellaneous(commands.Cog):
                 model="gpt-3.5-turbo",
                 messages=msg_context,
             )
-            if len(completion.choices[0].message.content) > 2000:
-                for i in range(0, len(completion.choices[0].message.content), 2000):
-                    if i != 0:
-                        msg = await ctx.send(
-                            completion.choices[0].message.content[i : i + 2000]
-                        )
-                    else:
-                        await ctx.message.reply(
-                            completion.choices[0].message.content[:2000]
-                        )
+            response = completion.choices[0].message.content
+            if len(response) > 2000:
+                msg = await cur_msg.reply(response[:2000])
+                for i in range(2000, len(response), 2000):
+                    await ctx.send(response[i : i + 2000])
             else:
-                msg = await ctx.message.reply(completion.choices[0].message.content)
+                msg = await cur_msg.reply(response)
         check = (
             lambda m: m.channel == ctx.channel
             and m.reference.message_id == msg.id
             and m.author == ctx.author
         )
-        reply = await self.bot.wait_for("message", check=check, timeout=60.0)
+        reply = None
+        try:
+            reply = await self.bot.wait_for("message", check=check, timeout=120.0)
+        except asyncio.TimeoutError:
+            pass
         if reply:
-            await ctx.invoke(self.gpt, prompt=reply.content, msg_context=msg_context)
+            await ctx.invoke(
+                self.gpt, prompt=reply.content, msg_context=msg_context, cur_msg=reply
+            )
 
 
 async def setup(bot: commands.Bot):
