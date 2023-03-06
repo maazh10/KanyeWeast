@@ -478,7 +478,6 @@ class Miscellaneous(commands.Cog):
         help="Answers queries using GPT-3.5-turbo model i.e. chatGPT from OpenAI. You can use this to ask questions, get advice, or just have a conversation with the bot.",
     )
     async def gpt(self, ctx: commands.Context, *, prompt: str):
-        # prompt = " ".join(prompt_list)
         async with ctx.typing():
             openai.api_key = self.keys["OPENAI_API_KEY"]
             completion = openai.ChatCompletion.create(
@@ -492,10 +491,14 @@ class Miscellaneous(commands.Cog):
             )
             if len(completion.choices[0].message.content) > 2000:
                 for i in range(0, len(completion.choices[0].message.content), 2000):
-
-                    await ctx.message.reply(
-                        completion.choices[0].message.content[i : i + 2000]
-                    )
+                    if i != 0:
+                        await ctx.send(
+                            completion.choices[0].message.content[i : i + 2000]
+                        )
+                    else:
+                        await ctx.message.reply(
+                            completion.choices[0].message.content[:2000]
+                        )
             else:
                 await ctx.message.reply(completion.choices[0].message.content)
 
