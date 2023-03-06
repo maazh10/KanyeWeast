@@ -32,7 +32,10 @@ bot = Bot_With_Sniped_Messages(
 
 @bot.event
 async def on_message(message: discord.Message):
-    await bot.process_commands(message)
+    if not isinstance(message.channel, discord.DMChannel) or await bot.is_owner(
+        message.author
+    ):
+        await bot.process_commands(message)
     if bot.user is not None:
         return
     if message.author.id == bot.user.id:
