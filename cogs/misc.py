@@ -502,7 +502,7 @@ class Miscellaneous(commands.Cog):
             if len(completion.choices[0].message.content) > 2000:
                 for i in range(0, len(completion.choices[0].message.content), 2000):
                     if i != 0:
-                        await ctx.send(
+                        msg = await ctx.send(
                             completion.choices[0].message.content[i : i + 2000]
                         )
                     else:
@@ -511,10 +511,15 @@ class Miscellaneous(commands.Cog):
                         )
             else:
                 msg = await ctx.message.reply(completion.choices[0].message.content)
-        check = lambda m: m.channel == ctx.channel and m.reference.message_id == msg.id
+        check = (
+            lambda m: m.channel == ctx.channel
+            and m.reference.message_id == msg.id
+            and m.author == ctx.author
+        )
         reply = await self.bot.wait_for("message", check=check, timeout=60.0)
         if reply:
             await ctx.invoke(self.gpt, prompt=reply.content, msg_context=msg_context)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
