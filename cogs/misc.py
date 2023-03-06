@@ -477,8 +477,8 @@ class Miscellaneous(commands.Cog):
         brief="Answers queries using GPT-3.5-turbo model.",
         help="Answers queries using GPT-3.5-turbo model i.e. chatGPT from OpenAI. You can use this to ask questions, get advice, or just have a conversation with the bot.",
     )
-    async def gpt(self, ctx: commands.Context, *prompt_list: str):
-        prompt = " ".join(prompt_list)
+    async def gpt(self, ctx: commands.Context, *, prompt: str):
+        # prompt = " ".join(prompt_list)
         async with ctx.typing():
             openai.api_key = self.keys["OPENAI_API_KEY"]
             completion = openai.ChatCompletion.create(

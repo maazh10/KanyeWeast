@@ -4,6 +4,7 @@ import pickle
 import subprocess
 import sys
 import traceback
+from typing import Annotated
 
 import discord
 from discord.ext import commands
@@ -73,10 +74,8 @@ class DevelopersOnly(commands.Cog):
         help="Test command.",
         aliases=["t1"],
     )
-    async def test1(self, ctx: commands.Context):
-        banned_set = f"{self.banned_set = }"
-        print(f"{banned_set}")
-        await ctx.send(f"```{banned_set}```")
+    async def test1(self, ctx: commands.Context, *, content: str):
+        await ctx.send(content)
         
             
     @commands.command(
