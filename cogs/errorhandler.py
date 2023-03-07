@@ -34,7 +34,7 @@ class CommandErrorHandler(commands.Cog):
                 return
 
             if isinstance(error, UserBanned):
-                await ctx.send("You are banned1.")
+                await ctx.send("You are banned.")
                 return
 
             if isinstance(error, commands.DisabledCommand):
