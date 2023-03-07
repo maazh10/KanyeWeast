@@ -190,7 +190,7 @@ def setup_logs():
             record.hostname = _ContextFilter.hostname
             return True
     
-    sysloghandler = SysLogHandler(address=("logs5.papertrailapp.com", 21421))
+    sysloghandler = SysLogHandler(address=(keys["PAPERTRAIL"], int(keys["PAPERTRAILURL"])))
     sysloghandler.addFilter(_ContextFilter())
 
     sysloghandler.setFormatter(formatter)
