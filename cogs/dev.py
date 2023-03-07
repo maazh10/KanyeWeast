@@ -211,7 +211,6 @@ class DevelopersOnly(commands.Cog):
         banned_list = "```\n"
         banned_list += "\n".join(map(name_function, self.banned_set)) if self.banned_set else "No banned users yet."
         banned_list += "\n```"
-        print(banned_list)
         await ctx.send(banned_list)
 
 async def setup(bot: commands.Bot):

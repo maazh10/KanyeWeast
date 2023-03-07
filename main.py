@@ -1,5 +1,9 @@
 import asyncio
 import json
+import logging
+from logging.handlers import SysLogHandler
+import socket
+import sys
 
 import discord
 from discord.ext import commands
@@ -141,13 +145,67 @@ async def snipe_on_error(ctx: commands.Context, error):
         return
     raise error
 
+def setup_logs():
+    logger = logging.getLogger("discord")
+    logger.setLevel(logging.INFO)
 
+    class _ColourFormatter(logging.Formatter):
+        LEVEL_COLOURS = [
+            (logging.DEBUG, '\x1b[40;1m'),
+            (logging.INFO, '\x1b[34;1m'),
+            (logging.WARNING, '\x1b[33;1m'),
+            (logging.ERROR, '\x1b[31m'),
+            (logging.CRITICAL, '\x1b[41m'),
+        ]
+
+        FORMATS = {
+            level: logging.Formatter(
+                f'\x1b[30;1m%(asctime)s\x1b[0m {colour}%(levelname)-8s\x1b[0m \x1b[35m%(name)s\x1b[0m %(message)s',
+                '%Y-%m-%d %H:%M:%S',
+            )
+            for level, colour in LEVEL_COLOURS
+        }
+
+        def format(self, record):
+            formatter = self.FORMATS.get(record.levelno)
+            if formatter is None:
+                formatter = self.FORMATS[logging.DEBUG]
+
+            # Override the traceback to always print in red
+            if record.exc_info:
+                text = formatter.formatException(record.exc_info)
+                record.exc_text = f'\x1b[31m{text}\x1b[0m'
+
+            output = formatter.format(record)
+
+            # Remove the cache layer
+            record.exc_text = None
+            return output
+
+    formatter = _ColourFormatter()
+
+    class _ContextFilter(logging.Filter):
+        hostname = socket.gethostname()
+        def filter(self, record):
+            record.hostname = _ContextFilter.hostname
+            return True
+    
+    sysloghandler = SysLogHandler(address=("logs5.papertrailapp.com", 21421))
+    sysloghandler.addFilter(_ContextFilter())
+
+    sysloghandler.setFormatter(formatter)
+    logger.addHandler(sysloghandler)
+
+    stderrhandler = logging.StreamHandler(sys.stderr)
+    stderrhandler.setFormatter(formatter)
+    logger.addHandler(stderrhandler)
+        
 async def load_cogs():
     """Loads cogs for bot"""
-    cog_list = ["cogs.dev", "cogs.pics", "cogs.misc", "cogs.music", "cogs.users"]
+    cog_list = ["cogs.dev", "cogs.pics", "cogs.misc", "cogs.music", "cogs.users", "cogs.errorhandler"]
     for cog in cog_list:
         await bot.load_extension(cog)
 
-
+setup_logs()
 asyncio.run(load_cogs())
-bot.run(keys["TOKEN"])
+bot.run(keys["TOKEN"], log_handler=None)
