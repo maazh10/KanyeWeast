@@ -11,8 +11,6 @@ import random
 import html
 import time
 import sqlite3
-import traceback
-import sys
 import typing
 import openai
 import asyncio
@@ -23,6 +21,8 @@ class Miscellaneous(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        with open("secrets.json") as f:
+            self.keys = json.load(f)
 
     def get_quote(self):
         response = requests.get("https://api.kanye.rest")

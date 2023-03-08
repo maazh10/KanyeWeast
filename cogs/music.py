@@ -8,8 +8,6 @@ from random import randint
 import lyricsgenius
 import unicodedata
 from asyncio import sleep
-import sys
-import traceback
 
 from cogs.utils import get_color, UserBanned
 

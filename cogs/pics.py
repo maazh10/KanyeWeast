@@ -1,17 +1,15 @@
-import discord
-from discord.ext import commands
-from cogs.utils import UserBanned
-
 import os
+from pathlib import Path
 import random
-import requests
 import shutil
 import string
-from pathlib import Path
-
 import typing
-import sys
-import traceback
+
+import discord
+from discord.ext import commands
+import requests
+
+from cogs.utils import UserBanned
 
 
 class Pictures(commands.Cog):

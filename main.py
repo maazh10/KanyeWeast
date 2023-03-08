@@ -192,7 +192,6 @@ def setup_logs():
     
     sysloghandler = SysLogHandler(address=(keys["PAPERTRAIL"], int(keys["PAPERTRAILPORT"])))
     sysloghandler.addFilter(_ContextFilter())
-
     sysloghandler.setFormatter(formatter)
     logger.addHandler(sysloghandler)
 
