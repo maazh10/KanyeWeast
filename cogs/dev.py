@@ -23,42 +23,6 @@ class DevelopersOnly(commands.Cog):
     async def cog_check(self, ctx: commands.Context):
         return await self.bot.is_owner(ctx.author)
 
-    ##################################################################################################
-    ####################################### COG ERROR HANDLER ########################################
-    ##################################################################################################
-
-    async def cog_command_error(self, ctx, error: commands.CommandError):
-        if hasattr(ctx.command, "on_error"):
-            return
-
-        ignored = ()
-
-        # Allows us to check for original exceptions raised and sent to CommandInvokeError.
-        # If nothing is found. We keep the exception passed to on_command_error.
-        error = getattr(error, "original", error)
-
-        # Anything in ignored will return and prevent anything happening.
-        if isinstance(error, ignored):
-            return
-
-        if isinstance(error, commands.CheckFailure):
-            await ctx.send("This command is dev-only pleb.")
-            return
-
-        else:
-            # All other Errors not returned come here. And we can just print the default TraceBack.
-            print(
-                "Ignoring exception in command {}:".format(ctx.command), file=sys.stderr
-            )
-            traceback.print_exception(
-                type(error), error, error.__traceback__, file=sys.stderr
-            )
-
-
-    ##################################################################################################
-    ##################################################################################################
-    ##################################################################################################
-
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"We have logged in as {self.bot.user}")
