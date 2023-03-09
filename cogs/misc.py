@@ -437,20 +437,24 @@ class Miscellaneous(commands.Cog):
                 }
             )
         async with ctx.typing():
-            openai.api_key = self.keys["OPENAI_API_KEY"]
-            completion = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=msg_context,
-            )
-            response = completion.choices[0].message.content
-            if len(response) > 2000:
-                msg = await cur_msg.reply(response[:2000])
-                for i in range(2000, len(response), 2000):
-                    await ctx.send(response[i : i + 2000])
-            else:
-                msg = await cur_msg.reply(response)
+            try:
+                openai.api_key = self.keys["OPENAI_API_KEY"]
+                completion = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=msg_context,
+                )
+                response = completion.choices[0].message.content
+                if len(response) > 2000:
+                    msg = await cur_msg.reply(response[:2000])
+                    for i in range(2000, len(response), 2000):
+                        await ctx.send(response[i : i + 2000])
+                else:
+                    msg = await cur_msg.reply(response)
+            except openai.error.RateLimitError:
+                await ctx.send("API rate limit exceeded.")
+                return
         check = (
-            lambda m: m.channel == ctx.channel
+            lambda m: m is not None and m.channel == ctx.channel
             and m.reference.message_id == msg.id
             and m.author == ctx.author
         )
