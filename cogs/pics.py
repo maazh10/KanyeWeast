@@ -14,8 +14,6 @@ from cogs.utils import UserBanned
 
 class Pictures(commands.Cog):
     """All your pic related commands lie here."""
-    
-
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -56,6 +54,7 @@ class Pictures(commands.Cog):
                 or homie == "amogus"
                 or homie == "sad"
                 or homie == "haram"
+                or homie == "album"
             )
         ]
         self.homie_pics_list = {
@@ -161,7 +160,6 @@ class Pictures(commands.Cog):
                 return
         except ValueError as e:
             print(e)
-            # pass
         j = random.randint(0, len(self.homie_pics_list[homie]) - 1)
         homie_to_send = os.path.join(
             self.pics_directory, homie, self.homie_pics_list[homie][j]
@@ -317,12 +315,24 @@ class Pictures(commands.Cog):
         sad_dir = os.path.join(self.pics_directory, "sad")
         images = os.listdir(sad_dir)
         i = random.randint(0, len(images) - 1)
-        file = discord.File(os.path.join(sad_dir, images[i]))
+        pic = discord.File(os.path.join(sad_dir, images[i]))
         text = images[i][:-3]
         if len(text) >= 40:
-            await ctx.send(text, file=file)
+            await ctx.send(text, file=pic)
         else:
-            await ctx.send(file=file)
+            await ctx.send(file=pic)
+
+    @commands.command(
+        name="",
+        brief="Sends a homie pic as an album art.",
+        help="Sends an edited homie pic as an album art.",
+    )
+    async def album(self, ctx: commands.Context):
+        album_dir = os.path.join(self.pics_directory, "album")
+        images = os.listdir(album_dir)
+        i = random.randint(0, len(images) - 1)
+        pic = discord.File(os.path.join(album_dir, images[i]))
+        await ctx.send(file=pic)
 
 
 async def setup(bot: commands.Bot):
