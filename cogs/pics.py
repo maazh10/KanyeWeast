@@ -331,8 +331,9 @@ class Pictures(commands.Cog):
         album_dir = os.path.join(self.pics_directory, "album")
         images = os.listdir(album_dir)
         i = random.randint(0, len(images) - 1)
-        pic = discord.File(os.path.join(album_dir, images[i]))
-        await ctx.send(file=pic)
+        await ctx.send(
+            file=discord.File(os.path.join(album_dir, images[i])), delete_after=5
+        )
 
 
 async def setup(bot: commands.Bot):
