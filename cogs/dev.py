@@ -179,10 +179,11 @@ class DevelopersOnly(commands.Cog):
         
     @commands.command(
         name="toggle",
-        brief="toggles specified command"
+        brief="toggles specified command",
+        help="toggles specified command",
     )
-    async def toggle(self, ctx: commands.Context, command: str):
-        command = self.bot.get_command(command)
+    async def toggle(self, ctx: commands.Context, command_str: str):
+        command = self.bot.get_command(command_str)
 
         if command is None:
             embed = discord.Embed(title="ERROR", description="I can't find a command with that name!", color=0xff0000)

@@ -35,6 +35,16 @@ class Music(commands.Cog):
     ##################################################################################################
 
     def get_spotify_url(self, artist: str, song_name: str, album: str):
+        """Gets the spotify url of a song.
+
+        Args:
+            artist: artist of the song
+            song_name: name of the song
+            album: album of the song
+
+        Returns:
+            Spotify url of the song.
+        """
         sp = spotipy.Spotify(
             auth_manager=SpotifyClientCredentials(
                 client_id=self.keys["SPOTIFY_CLIENT_ID"],

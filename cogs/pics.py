@@ -74,11 +74,6 @@ class Pictures(commands.Cog):
         msg += "```"
         await ctx.send(msg)
 
-    # @commands.command(
-    #     name="homienum",
-    #     brief="Sends nth pic of homie from modification date",
-    #     help="Use &homienum name [num] to get specific pic, Gets latest pic by default.",
-    # )
     async def get_num(self, ctx: commands.Context, name: str = "", num: int = -1):
         if name == "":
             await ctx.send("Must provide name.")
@@ -327,13 +322,16 @@ class Pictures(commands.Cog):
         brief="Sends a homie pic as an album art.",
         help="Sends an edited homie pic as an album art.",
     )
-    async def album(self, ctx: commands.Context):
+    async def album(self, ctx: commands.Context, index: int = -1):
         album_dir = os.path.join(self.pics_directory, "album")
         images = os.listdir(album_dir)
-        i = random.randint(0, len(images) - 1)
-        await ctx.send(
-            file=discord.File(os.path.join(album_dir, images[i])), delete_after=5
-        )
+        i = random.randint(0, len(images) - 1) if index == -1 else index
+        try:
+            await ctx.send(
+                file=discord.File(os.path.join(album_dir, images[i])), delete_after=5
+            )
+        except IndexError:
+            await ctx.send(f"index out of range. Choose a number between 0 and {len(images) - 1}.")
 
 
 async def setup(bot: commands.Bot):
