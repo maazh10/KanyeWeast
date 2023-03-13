@@ -454,7 +454,9 @@ class Miscellaneous(commands.Cog):
                 await ctx.send("API rate limit exceeded.")
                 return
         check = (
-            lambda m: m is not None and m.channel == ctx.channel
+            lambda m: m is not None 
+            and m.channel == ctx.channel
+            and m.reference is not None
             and m.reference.message_id == msg.id
             and m.author == ctx.author
         )
