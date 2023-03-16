@@ -8,7 +8,7 @@ from random import randint
 import lyricsgenius
 import unicodedata
 from asyncio import sleep
-
+import random
 from cogs.utils import get_color, UserBanned
 
 
@@ -342,20 +342,27 @@ class Music(commands.Cog):
         brief="Sends hbk song.",
         help="Sends hbk song from a special playlist :)",
     )
-    async def hbk(self, ctx: commands.Context):
+    async def hbk(self, ctx: commands.Context, playlist_id: str = None):
         sp = spotipy.Spotify(
             auth_manager=SpotifyClientCredentials(
                 client_id=self.keys["SPOTIFY_CLIENT_ID"],
                 client_secret=self.keys["SPOTIFY_CLIENT_SECRET"],
             )
         )
+        playlist_id = "7xMtk8dsPZCpQhASkO9Uvi" if playlist_id is None else playlist_id
+        tracks = []
+        results = sp.playlist_items(playlist_id)
+        tracks.extend(results["items"])
+        while results["next"]:
+            results = sp.next(results)
+            tracks.extend(results["items"])
 
-        playlist_id = "7xMtk8dsPZCpQhASkO9Uvi?si=5ad1144294014dec"
-        results = sp.playlist(playlist_id)
-        items = results["tracks"]["items"]
-        rnd = randint(0, len(items))
-        song_url = items[rnd]["track"]["external_urls"]["spotify"]
-        await ctx.send(song_url)
+        if tracks:
+            track = random.choice(tracks)["track"]
+            song_url = track["external_urls"]["spotify"]
+            await ctx.send(song_url)
+        else:
+            await ctx.send("The playlist is empty.")
 
 
 async def setup(bot: commands.Bot):
