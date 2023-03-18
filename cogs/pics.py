@@ -10,6 +10,7 @@ from discord.ext import commands
 import requests
 
 from cogs.utils import UserBanned
+import Paginator
 
 
 class Pictures(commands.Cog):
@@ -331,7 +332,31 @@ class Pictures(commands.Cog):
                 file=discord.File(os.path.join(album_dir, images[i])), delete_after=5
             )
         except IndexError:
-            await ctx.send(f"index out of range. Choose a number between 0 and {len(images) - 1}.")
+            await ctx.send(
+                f"index out of range. Choose a number between 0 and {len(images) - 1}."
+            )
+
+    @commands.command(
+        name="",
+        brief="Sends a gallery of pics for a homie.",
+        help="Sends an interactive gallery of pics for the given homie.",
+    )
+    async def gallery(self, ctx: commands.Context, homie: str = ""):
+        images = self.homie_pics_list[homie]
+        embeds = []
+        for i in range(len(images)):
+            embed = discord.Embed(
+                title=f"{homie} gallery",
+                description=f"page {i + 1} of {len(images)}",
+                color=discord.Color.from_rgb(0, 255, 255),
+            )
+            img_path = os.path.join(
+                self.pics_directory, homie, self.homie_pics_list[homie][i]
+            )
+            file = discord.File(img_path, filename=str(self.homie_pics_list[homie][i]))
+            embed.set_image(url=f"attachment://{self.homie_pics_list[homie][i]}")
+            embeds.append(embed)
+        await Paginator.Simple().start(ctx, pages=embeds)
 
 
 async def setup(bot: commands.Bot):
