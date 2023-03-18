@@ -1,9 +1,7 @@
 import os
-from pathlib import Path
 import random
-import shutil
-import string
-import typing
+import io
+import boto3
 
 import discord
 from discord.ext import commands
@@ -19,8 +17,11 @@ class Pictures(commands.Cog):
         self.bot = bot
         self.base_directory = os.path.abspath(os.curdir)
         self.pics_directory = os.path.abspath(os.path.join(os.curdir, "pics"))
-        self.set_homie_list()
         self.set_prev_homie("Nothing", "yet :(")
+        self.s3 = boto3.client('s3')
+        self.bucket = "kanyeweastbotpics"
+        self.set_homie_list()
+
 
     ##################################################################################################
     ######################################## COG BAN CHECK ###########################################
@@ -36,19 +37,23 @@ class Pictures(commands.Cog):
     ##################################################################################################
     ##################################################################################################
 
-    def sort_homie_pics(self, homie: str, update: str = "") -> list[Path]:
-        os.chdir(os.path.join(self.pics_directory, homie))
-        sorted_list = sorted(Path(".").iterdir(), key=lambda f: f.stat().st_ctime)
-        os.chdir(self.base_directory)
-        sorted_list = [x for x in sorted_list if not x.parts[-1].startswith(".")]
+    def sort_homie_pics(self, homie: str, update: str = "") -> list[str | None]:
+        result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=f'pics/{homie}/')
+        mtime_sorted_list = sorted(result.get('Contents'), key=lambda x: x['LastModified'])
+        keys_list = [ o.get('Key') for o in mtime_sorted_list ]
         if update:
-            self.homie_pics_list[homie] = sorted_list
-        return sorted_list
+            self.homie_pics_list[homie] = keys_list
+        return keys_list
+
+    async def save_pic(self, name: str, attachment: discord.Attachment):
+        self.s3.upload_fileobj(io.BytesIO(await attachment.read()), self.bucket, f"pics/{name}/{attachment.filename}")
 
     def set_homie_list(self):
+        result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix='pics/', Delimiter='/')
+        homies = {o.get('Prefix').split('/')[1] for o in result.get('CommonPrefixes')}
         self.homie_list = [
             homie
-            for homie in os.listdir(self.pics_directory)
+            for homie in homies
             if not (
                 homie.startswith(".")
                 or homie == "amogus"
@@ -82,12 +87,13 @@ class Pictures(commands.Cog):
             await ctx.send("Invalid homie.")
             return
         try:
+            url = self.s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket':self.bucket, 'Key': self.homie_pics_list[name][num]},
+                ExpiresIn=60
+            )
             await ctx.send(
-                file=discord.File(
-                    os.path.join(
-                        self.pics_directory, name, self.homie_pics_list[name][num]
-                    )
-                ),
+                url,
                 delete_after=5,
             )
         except IndexError:
@@ -156,11 +162,8 @@ class Pictures(commands.Cog):
         except ValueError as e:
             print(e)
         j = random.randint(0, len(self.homie_pics_list[homie]) - 1)
-        homie_to_send = os.path.join(
-            self.pics_directory, homie, self.homie_pics_list[homie][j]
-        )
         self.set_prev_homie(homie, j)
-        await ctx.send(file=discord.File(homie_to_send), delete_after=5)
+        await self.get_num(ctx, homie, j)
 
     async def list(self, ctx: commands.Context):
         homies = self.homie_list
@@ -185,18 +188,6 @@ class Pictures(commands.Cog):
     )
     async def homo(self, ctx: commands.Context, opt: str = ""):
         await self.homies(ctx, "mo", opt)
-
-    async def save_pic(self, name: str, url: str):
-        folder = os.path.join(self.pics_directory, name)
-        img_data = requests.get(url).content
-        img_name = (
-            "".join(random.choices(string.ascii_uppercase + string.digits, k=18))
-            + ".jpg"
-        )
-        path = os.path.join(folder, img_name)
-        with open(path, "wb") as handler:
-            handler.write(img_data)
-        self.sort_homie_pics(name, "update")
 
     ##################################################################################################
     ###################################### CUSTOM STR CONVERTER ######################################
@@ -233,7 +224,7 @@ class Pictures(commands.Cog):
                 )
             else:
                 for attachment in ctx.message.attachments:
-                    await self.save_pic(name, attachment.url)
+                    await self.save_pic(name, attachment)
                 await ctx.send(
                     f"image{'s' * (len(ctx.message.attachments) > 1)} added to {name}."
                 )
@@ -250,10 +241,12 @@ class Pictures(commands.Cog):
         if folder == "":
             await ctx.send("please specify a folder.")
             return
-        if folder in os.listdir("pics"):
+        result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix='pics/', Delimiter='/')
+        subdirs = {o.get('Prefix').split('/')[1] for o in result.get('CommonPrefixes')}
+        if folder in subdirs:
             await ctx.send("folder already exists.")
             return
-        os.mkdir(os.path.join("pics", folder))
+        self.s3.put_object(Bucket=self.bucket, Key=f'pics/{folder}/')
         self.set_homie_list()
         await ctx.send(f"folder {folder} added. use &addpic {folder} to add images.")
 
@@ -269,14 +262,13 @@ class Pictures(commands.Cog):
         if folder == "":
             await ctx.send("please specify a folder.")
             return
-        if folder not in os.listdir(self.pics_directory):
+        result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix='pics/', Delimiter='/')
+        subdirs = {o.get('Prefix').split('/')[1] for o in result.get('CommonPrefixes')}
+        if folder not in subdirs:
             await ctx.send("folder does not exist.")
             return
-        if len(os.listdir(os.path.join(self.pics_directory, folder))) == 0:
-            shutil.rmtree(os.path.join(self.pics_directory, folder))
-            self.set_homie_list()
-            await ctx.send(f"folder {folder} removed.")
-            return
+        if len(self.sort_homie_pics(folder)) == 1:
+            self.s3.delete_object(Bucket=self.bucket, Key=f'pics/{folder}/')
         await ctx.send(f"folder {folder} not removed beacuse it's non-empty.")
 
     @commands.command(
@@ -285,10 +277,14 @@ class Pictures(commands.Cog):
         help="Sends random sus message from server.",
     )
     async def sus(self, ctx: commands.Context):
-        amogus_dir = os.path.join(self.pics_directory, "amogus")
-        images = os.listdir(amogus_dir)
+        images = self.sort_homie_pics("amogus")
         i = random.randint(0, len(images) - 1)
-        await ctx.send(file=discord.File(os.path.join(amogus_dir, images[i])))
+        url = self.s3.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={'Bucket': self.bucket, 'Key': images[i]},
+            ExpiresIn=60
+        )       
+        await ctx.send(url)
 
     @commands.command(
         name="haram",
@@ -296,10 +292,14 @@ class Pictures(commands.Cog):
         help="Sends random sus message from server.",
     )
     async def haram(self, ctx: commands.Context):
-        haram_dir = os.path.join(self.pics_directory, "haram")
-        images = os.listdir(haram_dir)
+        images = self.sort_homie_pics("haram")
         i = random.randint(0, len(images) - 1)
-        await ctx.send(file=discord.File(os.path.join(haram_dir, images[i])))
+        url = self.s3.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={'Bucket': self.bucket, 'Key': images[i]},
+            ExpiresIn=60
+        )       
+        await ctx.send(url)
 
     @commands.command(
         name="",
@@ -307,15 +307,19 @@ class Pictures(commands.Cog):
         help="Sends heartbroken quote/image.",
     )
     async def sad(self, ctx: commands.Context):
-        sad_dir = os.path.join(self.pics_directory, "sad")
-        images = os.listdir(sad_dir)
+        images = self.sort_homie_pics("sad")
         i = random.randint(0, len(images) - 1)
-        pic = discord.File(os.path.join(sad_dir, images[i]))
+        url = self.s3.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={'Bucket': self.bucket, 'Key': images[i]},
+            ExpiresIn=60
+        )
+        file = discord.File(io.BytesIO(requests.get(url).content), filename="image.png")
         text = images[i][:-3]
+        msg = ""
         if len(text) >= 40:
-            await ctx.send(text, file=pic)
-        else:
-            await ctx.send(file=pic)
+            msg = text.split("/")[-1]
+        await ctx.send(msg if msg else None, file=file)
 
     @commands.command(
         name="",
@@ -323,13 +327,15 @@ class Pictures(commands.Cog):
         help="Sends an edited homie pic as an album art.",
     )
     async def album(self, ctx: commands.Context, index: int = -1):
-        album_dir = os.path.join(self.pics_directory, "album")
-        images = os.listdir(album_dir)
+        images = self.sort_homie_pics("album")
         i = random.randint(0, len(images) - 1) if index == -1 else index
         try:
-            await ctx.send(
-                file=discord.File(os.path.join(album_dir, images[i])), delete_after=5
+            url = self.s3.generate_presigned_url(
+                ClientMethod='get_object',
+                Params={'Bucket': self.bucket, 'Key': images[i]},
+                ExpiresIn=60
             )
+            await ctx.send(url)
         except IndexError:
             await ctx.send(f"index out of range. Choose a number between 0 and {len(images) - 1}.")
 
