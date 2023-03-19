@@ -228,6 +228,7 @@ class Pictures(commands.Cog):
                 await ctx.send(
                     f"image{'s' * (len(ctx.message.attachments) > 1)} added to {name}."
                 )
+                self.sort_homie_pics(name, update="update")
 
     @commands.command(
         name="addfolder",
