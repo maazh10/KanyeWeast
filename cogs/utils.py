@@ -5,24 +5,28 @@ import requests
 from discord.ext import commands
 from PIL import Image
 
-def get_color(image_url: str, palette_size = 16) -> int:
+
+def get_color(image_url: str, palette_size=16) -> int:
     # https://stackoverflow.com/questions/3241929/python-find-dominant-most-common-color-in-an-image
     image = Image.open(requests.get(image_url, stream=True).raw)
     image.thumbnail((100, 100))
-    paletted = image.convert('P', palette=Image.Palette.ADAPTIVE, colors=palette_size)
+    paletted = image.convert("P", palette=Image.Palette.ADAPTIVE, colors=palette_size)
 
     palette = paletted.getpalette()
     color_counts = sorted(paletted.getcolors(), reverse=True)
     palette_index = color_counts[0][1]
-    dominant_color = palette[palette_index*3:palette_index*3+3]
+    dominant_color = palette[palette_index * 3 : palette_index * 3 + 3]
     print(f"0x{dominant_color[0]:02x}{dominant_color[1]:02x}{dominant_color[2]:02x}")
-    return int(f"0x{dominant_color[0]:02x}{dominant_color[1]:02x}{dominant_color[2]:02x}", 16)
-        
+    return int(
+        f"0x{dominant_color[0]:02x}{dominant_color[1]:02x}{dominant_color[2]:02x}", 16
+    )
+
 
 class UserBanned(commands.CommandError):
     def __init__(self, user, *args, **kwargs):
         self.user = user
         super().__init__(*args, **kwargs)
+
 
 def category_map(name: str):
     categories = {
@@ -55,7 +59,3 @@ def category_map(name: str):
         return categories[name]
     except KeyError:
         return None
-
-if __name__ == "__main__":
-    print_rows(750477536353583205)
-

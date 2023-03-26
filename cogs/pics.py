@@ -9,6 +9,7 @@ import requests
 
 from cogs.utils import UserBanned
 import Paginator
+from cogs.utils import get_color
 
 
 class Pictures(commands.Cog):
@@ -19,10 +20,9 @@ class Pictures(commands.Cog):
         self.base_directory = os.path.abspath(os.curdir)
         self.pics_directory = os.path.abspath(os.path.join(os.curdir, "pics"))
         self.set_prev_homie("Nothing", "yet :(")
-        self.s3 = boto3.client('s3')
-        self.bucket = "kanyeweastbotpics"
+        self.s3 = boto3.client("s3")
+        self.bucket = "discordbotpics"
         self.set_homie_list()
-
 
     ##################################################################################################
     ######################################## COG BAN CHECK ###########################################
@@ -39,19 +39,27 @@ class Pictures(commands.Cog):
     ##################################################################################################
 
     def sort_homie_pics(self, homie: str, update: str = "") -> list[str | None]:
-        result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=f'pics/{homie}/')
-        mtime_sorted_list = sorted(result.get('Contents'), key=lambda x: x['LastModified'])
-        keys_list = [ o.get('Key') for o in mtime_sorted_list ]
+        result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=f"pics/{homie}/")
+        mtime_sorted_list = sorted(
+            result.get("Contents"), key=lambda x: x["LastModified"]
+        )
+        keys_list = [o.get("Key") for o in mtime_sorted_list]
         if update:
             self.homie_pics_list[homie] = keys_list
         return keys_list
 
     async def save_pic(self, name: str, attachment: discord.Attachment):
-        self.s3.upload_fileobj(io.BytesIO(await attachment.read()), self.bucket, f"pics/{name}/{attachment.filename}")
+        self.s3.upload_fileobj(
+            io.BytesIO(await attachment.read()),
+            self.bucket,
+            f"pics/{name}/{attachment.filename}",
+        )
 
     def set_homie_list(self):
-        result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix='pics/', Delimiter='/')
-        homies = {o.get('Prefix').split('/')[1] for o in result.get('CommonPrefixes')}
+        result = self.s3.list_objects_v2(
+            Bucket=self.bucket, Prefix="pics/", Delimiter="/"
+        )
+        homies = {o.get("Prefix").split("/")[1] for o in result.get("CommonPrefixes")}
         self.homie_list = [
             homie
             for homie in homies
@@ -89,9 +97,9 @@ class Pictures(commands.Cog):
             return
         try:
             url = self.s3.generate_presigned_url(
-                'get_object',
-                Params={'Bucket':self.bucket, 'Key': self.homie_pics_list[name][num]},
-                ExpiresIn=60
+                "get_object",
+                Params={"Bucket": self.bucket, "Key": self.homie_pics_list[name][num]},
+                ExpiresIn=60,
             )
             await ctx.send(
                 url,
@@ -147,6 +155,9 @@ class Pictures(commands.Cog):
             case "stats":
                 await self.get_homie_stat(ctx, homie)
                 return
+            case "gallery":
+                await self.get_gallery(ctx, homie)
+                return
 
         homies = self.homie_list
         if not homie:
@@ -173,6 +184,23 @@ class Pictures(commands.Cog):
             msg += homie + "\n"
         msg += "```"
         await ctx.send(msg)
+
+    async def get_gallery(self, ctx: commands.Context, homie: str = ""):
+        images = self.homie_pics_list[homie]
+        embeds = []
+        for i in range(len(images) - 1, -1, -1):
+            url = self.s3.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": self.bucket, "Key": self.homie_pics_list[homie][i]},
+                ExpiresIn=60,
+            )
+            embed = discord.Embed(
+                title=f"{homie.capitalize()}'s Gallery 💞",
+                color=discord.Color(random.randint(0, 0xFFFFFF)),
+            )
+            embed.set_image(url=url)
+            embeds.append(embed)
+        await Paginator.Simple().start(ctx, pages=embeds)
 
     @commands.command(
         name="homir",
@@ -243,12 +271,14 @@ class Pictures(commands.Cog):
         if folder == "":
             await ctx.send("please specify a folder.")
             return
-        result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix='pics/', Delimiter='/')
-        subdirs = {o.get('Prefix').split('/')[1] for o in result.get('CommonPrefixes')}
+        result = self.s3.list_objects_v2(
+            Bucket=self.bucket, Prefix="pics/", Delimiter="/"
+        )
+        subdirs = {o.get("Prefix").split("/")[1] for o in result.get("CommonPrefixes")}
         if folder in subdirs:
             await ctx.send("folder already exists.")
             return
-        self.s3.put_object(Bucket=self.bucket, Key=f'pics/{folder}/')
+        self.s3.put_object(Bucket=self.bucket, Key=f"pics/{folder}/")
         self.set_homie_list()
         await ctx.send(f"folder {folder} added. use &addpic {folder} to add images.")
 
@@ -264,13 +294,15 @@ class Pictures(commands.Cog):
         if folder == "":
             await ctx.send("please specify a folder.")
             return
-        result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix='pics/', Delimiter='/')
-        subdirs = {o.get('Prefix').split('/')[1] for o in result.get('CommonPrefixes')}
+        result = self.s3.list_objects_v2(
+            Bucket=self.bucket, Prefix="pics/", Delimiter="/"
+        )
+        subdirs = {o.get("Prefix").split("/")[1] for o in result.get("CommonPrefixes")}
         if folder not in subdirs:
             await ctx.send("folder does not exist.")
             return
         if len(self.sort_homie_pics(folder)) == 1:
-            self.s3.delete_object(Bucket=self.bucket, Key=f'pics/{folder}/')
+            self.s3.delete_object(Bucket=self.bucket, Key=f"pics/{folder}/")
         await ctx.send(f"folder {folder} not removed beacuse it's non-empty.")
 
     @commands.command(
@@ -282,10 +314,10 @@ class Pictures(commands.Cog):
         images = self.sort_homie_pics("amogus")
         i = random.randint(0, len(images) - 1)
         url = self.s3.generate_presigned_url(
-            ClientMethod='get_object',
-            Params={'Bucket': self.bucket, 'Key': images[i]},
-            ExpiresIn=60
-        )       
+            ClientMethod="get_object",
+            Params={"Bucket": self.bucket, "Key": images[i]},
+            ExpiresIn=60,
+        )
         await ctx.send(url)
 
     @commands.command(
@@ -297,10 +329,10 @@ class Pictures(commands.Cog):
         images = self.sort_homie_pics("haram")
         i = random.randint(0, len(images) - 1)
         url = self.s3.generate_presigned_url(
-            ClientMethod='get_object',
-            Params={'Bucket': self.bucket, 'Key': images[i]},
-            ExpiresIn=60
-        )       
+            ClientMethod="get_object",
+            Params={"Bucket": self.bucket, "Key": images[i]},
+            ExpiresIn=60,
+        )
         await ctx.send(url)
 
     @commands.command(
@@ -312,9 +344,9 @@ class Pictures(commands.Cog):
         images = self.sort_homie_pics("sad")
         i = random.randint(0, len(images) - 1)
         url = self.s3.generate_presigned_url(
-            ClientMethod='get_object',
-            Params={'Bucket': self.bucket, 'Key': images[i]},
-            ExpiresIn=60
+            ClientMethod="get_object",
+            Params={"Bucket": self.bucket, "Key": images[i]},
+            ExpiresIn=60,
         )
         file = discord.File(io.BytesIO(requests.get(url).content), filename="image.png")
         text = images[i][:-3]
@@ -333,37 +365,15 @@ class Pictures(commands.Cog):
         i = random.randint(0, len(images) - 1) if index == -1 else index
         try:
             url = self.s3.generate_presigned_url(
-                ClientMethod='get_object',
-                Params={'Bucket': self.bucket, 'Key': images[i]},
-                ExpiresIn=60
+                ClientMethod="get_object",
+                Params={"Bucket": self.bucket, "Key": images[i]},
+                ExpiresIn=60,
             )
             await ctx.send(url)
         except IndexError:
             await ctx.send(
                 f"index out of range. Choose a number between 0 and {len(images) - 1}."
             )
-
-    @commands.command(
-        name="",
-        brief="Sends a gallery of pics for a homie.",
-        help="Sends an interactive gallery of pics for the given homie.",
-    )
-    async def gallery(self, ctx: commands.Context, homie: str = ""):
-        images = self.homie_pics_list[homie]
-        embeds = []
-        for i in range(len(images)):
-            embed = discord.Embed(
-                title=f"{homie} gallery",
-                description=f"page {i + 1} of {len(images)}",
-                color=discord.Color.from_rgb(0, 255, 255),
-            )
-            img_path = os.path.join(
-                self.pics_directory, homie, self.homie_pics_list[homie][i]
-            )
-            file = discord.File(img_path, filename=str(self.homie_pics_list[homie][i]))
-            embed.set_image(url=f"attachment://{self.homie_pics_list[homie][i]}")
-            embeds.append(embed)
-        await Paginator.Simple().start(ctx, pages=embeds)
 
 
 async def setup(bot: commands.Bot):
