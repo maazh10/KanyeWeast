@@ -349,7 +349,12 @@ class Music(commands.Cog):
                 client_secret=self.keys["SPOTIFY_CLIENT_SECRET"],
             )
         )
-        playlist_id = "7xMtk8dsPZCpQhASkO9Uvi" if playlist_id is None else playlist_id
+        if not playlist_id:
+            playlist_id = (
+                "6lJ1P5DtOnzltJX5nPsyTZ"
+                if random.random() < 0.7
+                else "7xMtk8dsPZCpQhASkO9Uvi"
+            )
         tracks = []
         results = sp.playlist_items(playlist_id)
         tracks.extend(results["items"])
