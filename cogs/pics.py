@@ -132,11 +132,6 @@ class Pictures(commands.Cog):
         help="Send random homie pic. Use &homie [homie name] [opt]. Use &homie list for a list of names. Or &homie stats for stats on homie pics. Picks random homie if no argument provided. Use opt to provide specific picture in database, or latest to get latest picture",
     )
     async def homies(self, ctx: commands.Context, homie="", opt=""):
-        print(
-            isinstance(ctx.message.channel, discord.DMChannel),
-            not await self.bot.is_owner(ctx.message.author),
-            ctx.message.author.id != int(self.keys["ID_LUCE"]),
-        )
         if isinstance(ctx.message.channel, discord.DMChannel):
             if not await self.bot.is_owner(
                 ctx.message.author
