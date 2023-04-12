@@ -36,8 +36,10 @@ bot = Bot_With_Sniped_Messages(
 
 @bot.event
 async def on_message(message: discord.Message):
-    if not isinstance(message.channel, discord.DMChannel) or await bot.is_owner(
-        message.author
+    if (
+        not isinstance(message.channel, discord.DMChannel)
+        or await bot.is_owner(message.author)
+        or message.author.id == int(keys["ID_LUCE"])
     ):
         await bot.process_commands(message)
     if bot.user is not None:
@@ -145,23 +147,24 @@ async def snipe_on_error(ctx: commands.Context, error):
         return
     raise error
 
+
 def setup_logs():
     logger = logging.getLogger("discord")
     logger.setLevel(logging.INFO)
 
     class _ColourFormatter(logging.Formatter):
         LEVEL_COLOURS = [
-            (logging.DEBUG, '\x1b[40;1m'),
-            (logging.INFO, '\x1b[34;1m'),
-            (logging.WARNING, '\x1b[33;1m'),
-            (logging.ERROR, '\x1b[31m'),
-            (logging.CRITICAL, '\x1b[41m'),
+            (logging.DEBUG, "\x1b[40;1m"),
+            (logging.INFO, "\x1b[34;1m"),
+            (logging.WARNING, "\x1b[33;1m"),
+            (logging.ERROR, "\x1b[31m"),
+            (logging.CRITICAL, "\x1b[41m"),
         ]
 
         FORMATS = {
             level: logging.Formatter(
-                f'\x1b[30;1m%(asctime)s\x1b[0m {colour}%(levelname)-8s\x1b[0m \x1b[35m%(name)s\x1b[0m %(message)s',
-                '%Y-%m-%d %H:%M:%S',
+                f"\x1b[30;1m%(asctime)s\x1b[0m {colour}%(levelname)-8s\x1b[0m \x1b[35m%(name)s\x1b[0m %(message)s",
+                "%Y-%m-%d %H:%M:%S",
             )
             for level, colour in LEVEL_COLOURS
         }
@@ -174,7 +177,7 @@ def setup_logs():
             # Override the traceback to always print in red
             if record.exc_info:
                 text = formatter.formatException(record.exc_info)
-                record.exc_text = f'\x1b[31m{text}\x1b[0m'
+                record.exc_text = f"\x1b[31m{text}\x1b[0m"
 
             output = formatter.format(record)
 
@@ -186,11 +189,14 @@ def setup_logs():
 
     class _ContextFilter(logging.Filter):
         hostname = socket.gethostname()
+
         def filter(self, record):
             record.hostname = _ContextFilter.hostname
             return True
-    
-    sysloghandler = SysLogHandler(address=(keys["PAPERTRAIL"], int(keys["PAPERTRAILPORT"])))
+
+    sysloghandler = SysLogHandler(
+        address=(keys["PAPERTRAIL"], int(keys["PAPERTRAILPORT"]))
+    )
     sysloghandler.addFilter(_ContextFilter())
     sysloghandler.setFormatter(formatter)
     logger.addHandler(sysloghandler)
@@ -198,12 +204,21 @@ def setup_logs():
     stderrhandler = logging.StreamHandler(sys.stderr)
     stderrhandler.setFormatter(formatter)
     logger.addHandler(stderrhandler)
-        
+
+
 async def load_cogs():
     """Loads cogs for bot"""
-    cog_list = ["cogs.dev", "cogs.pics", "cogs.misc", "cogs.music", "cogs.users", "cogs.errorhandler"]
+    cog_list = [
+        "cogs.dev",
+        "cogs.pics",
+        "cogs.misc",
+        "cogs.music",
+        "cogs.users",
+        "cogs.errorhandler",
+    ]
     for cog in cog_list:
         await bot.load_extension(cog)
+
 
 setup_logs()
 asyncio.run(load_cogs())
