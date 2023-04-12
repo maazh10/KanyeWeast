@@ -38,8 +38,8 @@ bot = Bot_With_Sniped_Messages(
 async def on_message(message: discord.Message):
     if (
         not isinstance(message.channel, discord.DMChannel)
-        or await bot.is_owner(message.author)
         or message.author.id == int(keys["ID_LUCE"])
+        or await bot.is_owner(message.author)
     ):
         await bot.process_commands(message)
     if bot.user is not None:
