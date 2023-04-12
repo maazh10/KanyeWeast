@@ -6,6 +6,7 @@ import boto3
 import discord
 from discord.ext import commands
 import requests
+import json
 
 from cogs.utils import UserBanned
 import Paginator
@@ -23,6 +24,8 @@ class Pictures(commands.Cog):
         self.s3 = boto3.client("s3")
         self.bucket = "discordbotpics"
         self.set_homie_list()
+        with open("secrets.json") as f:
+            self.keys = json.load(f)
 
     ##################################################################################################
     ######################################## COG BAN CHECK ###########################################
@@ -129,6 +132,18 @@ class Pictures(commands.Cog):
         help="Send random homie pic. Use &homie [homie name] [opt]. Use &homie list for a list of names. Or &homie stats for stats on homie pics. Picks random homie if no argument provided. Use opt to provide specific picture in database, or latest to get latest picture",
     )
     async def homies(self, ctx: commands.Context, homie="", opt=""):
+        print(
+            isinstance(ctx.message.channel, discord.DMChannel),
+            not await self.bot.is_owner(ctx.message.author),
+            ctx.message.author.id != int(self.keys["ID_LUCE"]),
+        )
+        if isinstance(ctx.message.channel, discord.DMChannel):
+            if not await self.bot.is_owner(
+                ctx.message.author
+            ) and ctx.message.author.id != int(self.keys["ID_LUCE"]):
+                await ctx.send("You can't use this command in DMs")
+                return
+
         homie = homie.lower()
         match homie:
             case "stats":
