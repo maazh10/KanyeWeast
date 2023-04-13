@@ -1,7 +1,6 @@
 import sqlite3
 
 from PIL import Image
-from colorthief import ColorThief
 from discord.ext import commands
 import requests
 
@@ -16,7 +15,6 @@ def get_color(image_url: str, palette_size=16) -> int:
     color_counts = sorted(paletted.getcolors(), reverse=True)
     palette_index = color_counts[0][1]
     dominant_color = palette[palette_index * 3 : palette_index * 3 + 3]
-    print(f"0x{dominant_color[0]:02x}{dominant_color[1]:02x}{dominant_color[2]:02x}")
     return int(
         f"0x{dominant_color[0]:02x}{dominant_color[1]:02x}{dominant_color[2]:02x}", 16
     )

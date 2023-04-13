@@ -209,7 +209,7 @@ async def load_cogs():
         "cogs.misc",
         "cogs.music",
         "cogs.users",
-        "cogs.errorhandler",
+        "cogs.globallisteners",
     ]
     for cog in cog_list:
         await bot.load_extension(cog)

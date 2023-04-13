@@ -1,12 +1,14 @@
 import asyncio
 import html
 import json
+from multiprocessing import Pool
 import random
 import sqlite3
 import time
 
 import discord
 from discord.ext import commands
+from discord.ext.commands.flags import tuple_convert_all
 import openai
 import requests
 
@@ -111,6 +113,48 @@ class Miscellaneous(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    async def get_user_name(self, ctx: commands.Context, row: tuple) -> str:
+        user_id = row[0]
+        score = row[1]
+        user_name = ""
+        user = None
+        try:
+            try:
+                user = await ctx.guild.fetch_member(user_id)
+                user_name = user.display_name
+            except discord.NotFound:
+                user = self.bot.get_user(user_id)
+                await ctx.send(f"User {user.name} not in server")
+                user_name = user.name
+        except AttributeError:
+            return ""
+        return f"{score: <3}\t{user_name: <30}\n"
+
+    async def multiprocess_get_row(self, ctx: commands.Context):
+        conn = sqlite3.connect("database.db")
+        c = conn.cursor()
+        sql = """
+            SELECT user_id, easy + medium + hard AS score 
+            FROM TriviaLB 
+            WHERE guild_id = ? 
+            ORDER BY score DESC
+        """
+        c.execute(sql, [ctx.guild.id])
+        embed = discord.Embed(
+            title=f"Leaderboard - {ctx.guild}", color=discord.Colour.random()
+        )
+        embed.set_thumbnail(url=ctx.guild.icon.url)
+        board = "```"
+        display_names = map(lambda row: self.get_user_name(ctx, row), c.fetchall())
+        display_names = await asyncio.gather(*display_names)
+        board += "".join(display_names)
+        board += "```"
+        embed.description = board
+        await ctx.send(embed=embed)
+        conn.close()
+        return
+
+
     @commands.command(
         aliases=["triv"],
         brief="Play a round of trivia",
@@ -118,30 +162,7 @@ class Miscellaneous(commands.Cog):
     )
     async def trivia(self, ctx: commands.Context, category: str = ""):
         if category == "leaderboard" or category == "lb":
-            conn = sqlite3.connect("database.db")
-            c = conn.cursor()
-            sql = """
-                SELECT user_id, easy + medium + hard AS score 
-                FROM TriviaLB 
-                WHERE guild_id = ? 
-                ORDER BY score DESC
-            """
-            c.execute(sql, [ctx.guild.id])
-            embed = discord.Embed(
-                title=f"Leaderboard - {ctx.guild}", color=discord.Colour.random()
-            )
-            embed.set_thumbnail(url=ctx.guild.icon.url)
-            rank = 1
-            board = "```"
-            for row in c.fetchall():
-                user = await ctx.guild.fetch_member(row[0])
-                score = row[1]
-                board += f"{score: <3}\t{user.display_name:<30}\n"
-                rank += 1
-            board += "```"
-            embed.description = board
-            await ctx.send(embed=embed)
-            conn.close()
+            await self.multiprocess_get_row(ctx)
             return
         if category == "categories":
             embed = discord.Embed(

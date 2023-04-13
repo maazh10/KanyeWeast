@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from cogs.utils import UserBanned
 
-class CommandErrorHandler(commands.Cog):
+class GlobalListeners(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -76,7 +76,7 @@ class CommandErrorHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):
-        logging.getLogger("discord").info(f"Command {ctx.command.name} was used by {ctx.author} with args {ctx.args} and kwargs {ctx.kwargs}")
+        logging.getLogger("discord").info(f"Command {ctx.command.name} was used by {ctx.author} with args {ctx.args[2:]} and kwargs {ctx.kwargs}")
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(CommandErrorHandler(bot))
+    await bot.add_cog(GlobalListeners(bot))
