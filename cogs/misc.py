@@ -1,14 +1,12 @@
 import asyncio
 import html
 import json
-from multiprocessing import Pool
 import random
 import sqlite3
 import time
 
 import discord
 from discord.ext import commands
-from discord.ext.commands.flags import tuple_convert_all
 import openai
 import requests
 
@@ -130,7 +128,7 @@ class Miscellaneous(commands.Cog):
             return ""
         return f"{score: <3}\t{user_name: <30}\n"
 
-    async def multiprocess_get_row(self, ctx: commands.Context):
+    async def get_leaderboard(self, ctx: commands.Context):
         conn = sqlite3.connect("database.db")
         c = conn.cursor()
         sql = """
@@ -162,7 +160,7 @@ class Miscellaneous(commands.Cog):
     )
     async def trivia(self, ctx: commands.Context, category: str = ""):
         if category == "leaderboard" or category == "lb":
-            await self.multiprocess_get_row(ctx)
+            await self.get_leaderboard(ctx)
             return
         if category == "categories":
             embed = discord.Embed(
