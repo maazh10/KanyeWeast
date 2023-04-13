@@ -1,9 +1,9 @@
 import sqlite3
 
-from colorthief import ColorThief
-import requests
-from discord.ext import commands
 from PIL import Image
+from colorthief import ColorThief
+from discord.ext import commands
+import requests
 
 
 def get_color(image_url: str, palette_size=16) -> int:

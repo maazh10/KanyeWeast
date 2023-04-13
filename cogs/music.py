@@ -1,16 +1,17 @@
-import discord
-from discord.ext import commands
-
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
+from asyncio import sleep
 import json
 from random import randint
-import lyricsgenius
-import unicodedata
-from asyncio import sleep
 import random
-from cogs.utils import get_color, UserBanned
+import unicodedata
 
+import discord
+from discord.ext import commands
+import lyricsgenius
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
+from cogs.dev import DevelopersOnly
+from cogs.utils import UserBanned, get_color
 
 class Music(commands.Cog):
     """This category has all music related commands."""
@@ -26,6 +27,7 @@ class Music(commands.Cog):
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
+        assert isinstance(dev, DevelopersOnly)
         if ctx.author.id in dev.banned_set:
             raise UserBanned(ctx.message.author)
         return True

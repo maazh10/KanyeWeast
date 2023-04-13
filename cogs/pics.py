@@ -1,17 +1,16 @@
+import io
+import json
 import os
 import random
-import io
-import boto3
 
+import Paginator
+import boto3
 import discord
 from discord.ext import commands
 import requests
-import json
 
+from cogs.dev import DevelopersOnly
 from cogs.utils import UserBanned
-import Paginator
-from cogs.utils import get_color
-
 
 class Pictures(commands.Cog):
     """All your pic related commands lie here."""
@@ -33,6 +32,7 @@ class Pictures(commands.Cog):
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
+        assert isinstance(dev, DevelopersOnly)
         if ctx.author.id in dev.banned_set:
             raise UserBanned(ctx.message.author)
         return True

@@ -2,14 +2,9 @@ import json
 import os
 import pickle
 import subprocess
-import sys
-import traceback
-from typing import Annotated
 
 import discord
 from discord.ext import commands
-
-from cogs.utils import get_color
 
 class DevelopersOnly(commands.Cog):
     """This category is only for dev use. If you're not a dev and try to use you could be banned."""

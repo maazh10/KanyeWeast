@@ -1,12 +1,14 @@
-import discord
-from discord.ext import commands
-
-from cogs.utils import UserBanned
-from random import randint
 import asyncio
+from random import randint
 import sys
 import traceback
 from typing import Annotated
+
+import discord
+from discord.ext import commands
+
+from cogs.dev import DevelopersOnly
+from cogs.utils import UserBanned
 
 ########################################################################
 
@@ -95,6 +97,7 @@ class Users(commands.Cog):
     
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
+        assert isinstance(dev, DevelopersOnly)
         if ctx.author.id in dev.banned_set:
             raise UserBanned(ctx.message.author)
         return True

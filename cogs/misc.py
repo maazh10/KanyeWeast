@@ -1,19 +1,17 @@
-import discord
-
-# from discord.app_commands import command
-from discord.ext import commands
-
-from cogs.utils import get_color, category_map, UserBanned
-
-import requests
+import asyncio
+import html
 import json
 import random
-import html
-import time
 import sqlite3
-import typing
+import time
+
+import discord
+from discord.ext import commands
 import openai
-import asyncio
+import requests
+
+from cogs.dev import DevelopersOnly
+from cogs.utils import UserBanned, category_map
 
 
 class Miscellaneous(commands.Cog):
@@ -35,6 +33,7 @@ class Miscellaneous(commands.Cog):
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
+        assert isinstance(dev, DevelopersOnly)
         if ctx.author.id in dev.banned_set:
             raise UserBanned(ctx.message.author)
         return True
