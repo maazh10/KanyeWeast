@@ -1,9 +1,6 @@
 import asyncio
-import html
 import json
 import random
-import sqlite3
-import time
 
 import discord
 from discord.ext import commands
@@ -11,7 +8,7 @@ import openai
 import requests
 
 from cogs.dev import DevelopersOnly
-from cogs.utils import UserBanned, category_map
+from cogs.utils import UserBanned
 
 
 class Miscellaneous(commands.Cog):
@@ -19,13 +16,8 @@ class Miscellaneous(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        with open("secrets.json") as f:
+        with open("secrets.json", "r") as f:
             self.keys = json.load(f)
-
-    def get_quote(self):
-        response = requests.get("https://api.kanye.rest")
-        json_data = json.loads(response.text)
-        return json_data["quote"]
 
     ##################################################################################################
     ######################################## COG BAN CHECK ###########################################
@@ -83,21 +75,14 @@ class Miscellaneous(commands.Cog):
         assert self.bot.user.avatar is not None
         embed.color = 3348751
         embed.set_author(name="Kanye West", icon_url=self.bot.user.avatar.url)
+        def get_quote() -> str:
+            response = requests.get("https://api.kanye.rest")
+            json_data = json.loads(response.text)
+            return json_data["quote"]
         embed.description = (
-            f"[{self.get_quote()}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
+            f"[{get_quote()}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
         )
         await ctx.send(embed=embed)
-
-    @commands.command(
-        name="rick", brief="Get Rick'd", help="Are you dumb what is there to understand"
-    )
-    async def rick(self, ctx: commands.Context):
-        embed = discord.Embed()
-        embed.set_image(
-            url="https://media1.tenor.com/images/3e30fa16b8a79b44185060d0df450009/tenor.gif?itemid=19920902"
-        )
-        embed.description = "Never gonna give you up"
-        await ctx.send(embed=embed, delete_after=8)
 
     @commands.command(
         name="morning",
@@ -111,143 +96,16 @@ class Miscellaneous(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    async def get_user_name(self, ctx: commands.Context, row: tuple) -> str:
-        user_id = row[0]
-        score = row[1]
-        user_name = ""
-        user = None
-        try:
-            try:
-                user = await ctx.guild.fetch_member(user_id)
-                user_name = user.display_name
-            except discord.NotFound:
-                user = self.bot.get_user(user_id)
-                await ctx.send(f"User {user.name} not in server")
-                user_name = user.name
-        except AttributeError:
-            return ""
-        return f"{score: <3}\t{user_name: <30}\n"
-
-    async def get_leaderboard(self, ctx: commands.Context):
-        conn = sqlite3.connect("database.db")
-        c = conn.cursor()
-        sql = """
-            SELECT user_id, easy + medium + hard AS score 
-            FROM TriviaLB 
-            WHERE guild_id = ? 
-            ORDER BY score DESC
-        """
-        c.execute(sql, [ctx.guild.id])
-        embed = discord.Embed(
-            title=f"Leaderboard - {ctx.guild}", color=discord.Colour.random()
-        )
-        embed.set_thumbnail(url=ctx.guild.icon.url)
-        board = "```"
-        display_names = map(lambda row: self.get_user_name(ctx, row), c.fetchall())
-        display_names = await asyncio.gather(*display_names)
-        board += "".join(display_names)
-        board += "```"
-        embed.description = board
-        await ctx.send(embed=embed)
-        conn.close()
-        return
-
-
     @commands.command(
-        aliases=["triv"],
-        brief="Play a round of trivia",
-        help="Play a round of trivia. Choose a category with &trivia {category}. To view a list of categories use &trivia categories. If no category is specified, a random category will be chosen.",
+        name="rick", brief="Get Rick'd", help="Are you dumb what is there to understand"
     )
-    async def trivia(self, ctx: commands.Context, category: str = ""):
-        if category == "leaderboard" or category == "lb":
-            await self.get_leaderboard(ctx)
-            return
-        if category == "categories":
-            embed = discord.Embed(
-                title="Categories",
-                description=f"General\nBooks\nFilm\nMusic\nTheatre\nTelevision\nVideo Games\nBoard Games\nNature\nComputers\nMath\nMythology\nSports\nGeography\nHistory\nPolitics\nArt\nCelebrities\nAnimals\nVehicles\nComics\nGadgets\nAnime\nCartoon",
-                color=discord.Colour.random(),
-            )
-            await ctx.send(embed=embed)
-            return
-        start = time.time()
-        response = requests.get(f"https://opentdb.com/api.php?amount=1")
-        if category:
-            if category_map(category):
-                cat_id = category_map(category)
-                response = requests.get(
-                    f"https://opentdb.com/api.php?amount=1&category={cat_id}"
-                )
-            else:
-                await ctx.send("Invalid category. Please enter a valid category.")
-                return
-        if response.status_code == 200:
-            data = response.json()["results"][0]
-            if data["type"] == "multiple":
-                answers = data["incorrect_answers"]
-                answers.append(data["correct_answer"])
-                random.shuffle(answers)
-            else:
-                answers = ["True", "False"]
-            choices = ""
-            for i in range(97, 97 + len(answers)):
-                choices += f"\n({chr(i)}) {html.unescape(answers[i - 97])}\n"
-            embed = discord.Embed(
-                title="Question",
-                description=f'{html.unescape(data["question"])}',
-                color=discord.Colour.random(),
-            )
-            embed.add_field(
-                name="Difficulty",
-                value=f'{data["difficulty"].capitalize()}',
-                inline=True,
-            )
-            embed.add_field(name="Category", value=f'{data["category"]}', inline=True)
-            embed.add_field(name="Choices", value=f"{choices}", inline=False)
-            await ctx.send(embed=embed)
-            response_list = ["a", "b", "c", "d"] if len(answers) == 4 else ["a", "b"]
-            response = await self.bot.wait_for("message")
-            message_predicate = (
-                response.author.id == ctx.message.author.id
-                and response.channel.id == ctx.message.channel.id
-                and response.content.lower() in response_list
-            )
-            while not message_predicate:
-                response = await self.bot.wait_for("message")
-                message_predicate = (
-                    response.author.id == ctx.message.author.id
-                    and response.channel.id == ctx.message.channel.id
-                    and response.content.lower() in response_list
-                )
-            if time.time() - start > 20:
-                await response.reply(
-                    f"You took too long to answer bozo, correct answer was **{html.unescape(data['correct_answer'])}**"
-                )
-                return
-            conn = sqlite3.connect("database.db")
-            cursor = conn.cursor()
-            if answers[ord(response.content.lower()) - 97] == data["correct_answer"]:
-                sql = "SELECT * FROM TriviaLB WHERE user_id = ? AND guild_id = ?"
-                cursor.execute(sql, (ctx.author.id, ctx.guild.id))
-                if cursor.fetchone():
-                    sql = f"UPDATE TriviaLB SET {data['difficulty']} = {data['difficulty']} + 1 WHERE user_id = ? AND guild_id = ?"
-                    cursor.execute(sql, (ctx.author.id, ctx.guild.id))
-                    conn.commit()
-                else:
-                    sql = f"INSERT INTO TriviaLB (user_id, guild_id, {data['difficulty']}) VALUES (?, ?, ?)"
-                    cursor.execute(sql, (ctx.author.id, ctx.guild.id, 1))
-                    conn.commit()
-                await response.reply("Correct!")
-            else:
-                sql = f"UPDATE TriviaLB SET {data['difficulty']} = {data['difficulty']} - 1 WHERE user_id = ? AND guild_id = ? AND {data['difficulty']} > 0"
-                cursor.execute(sql, (ctx.author.id, ctx.guild.id))
-                conn.commit()
-                await response.reply(
-                    f"Wrong bozo, it was **{html.unescape(data['correct_answer'])}**"
-                )
-            conn.close()
-        else:
-            await ctx.send(f"Request failed with status code {response.status_code}")
+    async def rick(self, ctx: commands.Context):
+        embed = discord.Embed()
+        embed.set_image(
+            url="https://media1.tenor.com/images/3e30fa16b8a79b44185060d0df450009/tenor.gif?itemid=19920902"
+        )
+        embed.description = "Never gonna give you up"
+        await ctx.send(embed=embed, delete_after=8)
 
     @commands.command(
         name="fuck",
@@ -439,21 +297,9 @@ class Miscellaneous(commands.Cog):
         msg_context: list = [],
         cur_msg: discord.Message = None,
     ):
-        if not msg_context:
-            msg_context = [
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ]
-            cur_msg = ctx.message
-        else:
-            msg_context.append(
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            )
+        msg_context = msg_context + [{"role": "user", "content": prompt}]
+        cur_msg = cur_msg or ctx.message
+        print(msg_context)
         async with ctx.typing():
             try:
                 openai.api_key = self.keys["OPENAI_API_KEY"]
