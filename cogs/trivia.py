@@ -129,14 +129,15 @@ class TriviaCog(commands.Cog):
             return
         start = time.time()
         response = requests.get(f"https://opentdb.com/api.php?amount=1")
-        if category and category_map(category):
-            cat_id = category_map(category)
-            response = requests.get(
-                f"https://opentdb.com/api.php?amount=1&category={cat_id}"
-            )
-        else:
-            await ctx.send("Invalid category. Please enter a valid category.")
-            return
+        if category:
+            if category_map(category):
+                cat_id = category_map(category)
+                response = requests.get(
+                    f"https://opentdb.com/api.php?amount=1&category={cat_id}"
+                )
+            else:
+                await ctx.send("Invalid category. Please enter a valid category.")
+                return
         if response.status_code == 200:
             data = response.json()["results"][0]
             if data["type"] == "multiple":
