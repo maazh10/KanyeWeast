@@ -210,6 +210,7 @@ async def load_cogs():
         "cogs.music",
         "cogs.users",
         "cogs.globallisteners",
+        "cogs.trivia",
     ]
     for cog in cog_list:
         await bot.load_extension(cog)

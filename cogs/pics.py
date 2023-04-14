@@ -133,9 +133,9 @@ class Pictures(commands.Cog):
     )
     async def homies(self, ctx: commands.Context, homie="", opt=""):
         if isinstance(ctx.message.channel, discord.DMChannel):
-            if not await self.bot.is_owner(
+            if not (await self.bot.is_owner(
                 ctx.message.author
-            ) and ctx.message.author.id != int(self.keys["ID_LUCE"]):
+            ) or ctx.message.author.id == int(self.keys["ID_LUCE"])):
                 await ctx.send("You can't use this command in DMs")
                 return
 
