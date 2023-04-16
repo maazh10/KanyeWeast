@@ -82,7 +82,9 @@ class TriviaCog(commands.Cog):
         conn.close()
         return
 
-    def update_db(self, ctx: commands.Context, user_id: int, difficulty: str, correct: bool):
+    def update_db(
+        self, ctx: commands.Context, user_id: int, difficulty: str, correct: bool
+    ):
         """Connects to the database and updates the leaderboard.
 
         Args:
@@ -109,7 +111,6 @@ class TriviaCog(commands.Cog):
         conn.commit()
         conn.close()
 
-
     @commands.command(
         aliases=["triv"],
         brief="Play a round of trivia",
@@ -122,7 +123,7 @@ class TriviaCog(commands.Cog):
         if category == "categories":
             embed = discord.Embed(
                 title="Categories",
-                description=f"General\nBooks\nFilm\nMusic\nTheatre\nTelevision\nVideo Games\nBoard Games\nNature\nComputers\nMath\nMythology\nSports\nGeography\nHistory\nPolitics\nArt\nCelebrities\nAnimals\nVehicles\nComics\nGadgets\nAnime\nCartoon",
+                description="General\nBooks\nFilm\nMusic\nTheatre\nTelevision\nVideo Games\nBoard Games\nNature\nComputers\nMath\nMythology\nSports\nGeography\nHistory\nPolitics\nArt\nCelebrities\nAnimals\nVehicles\nComics\nGadgets\nAnime\nCartoon",
                 color=discord.Colour.random(),
             )
             await ctx.send(embed=embed)
@@ -137,7 +138,8 @@ class TriviaCog(commands.Cog):
             else:
                 await ctx.send("Invalid category. Please enter a valid category.")
                 return
-        response = requests.get(f"https://opentdb.com/api.php?amount=1")
+        else:
+            response = requests.get("https://opentdb.com/api.php?amount=1")
         if response.status_code == 200:
             data = response.json()["results"][0]
             if data["type"] == "multiple":
@@ -191,6 +193,7 @@ class TriviaCog(commands.Cog):
                 self.update_db(ctx, ctx.author.id, data["difficulty"], False)
         else:
             await ctx.send(f"Request failed with status code {response.status_code}")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(TriviaCog(bot))
