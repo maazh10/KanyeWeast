@@ -75,10 +75,12 @@ class Miscellaneous(commands.Cog):
         assert self.bot.user.avatar is not None
         embed.color = 3348751
         embed.set_author(name="Kanye West", icon_url=self.bot.user.avatar.url)
+
         def get_quote() -> str:
             response = requests.get("https://api.kanye.rest")
             json_data = json.loads(response.text)
             return json_data["quote"]
+
         embed.description = (
             f"[{get_quote()}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"
         )
@@ -318,7 +320,7 @@ class Miscellaneous(commands.Cog):
                 await ctx.send("API rate limit exceeded.")
                 return
         check = (
-            lambda m: m is not None 
+            lambda m: m is not None
             and m.channel == ctx.channel
             and m.reference is not None
             and m.reference.message_id == msg.id
@@ -333,6 +335,40 @@ class Miscellaneous(commands.Cog):
             await ctx.invoke(
                 self.gpt, prompt=reply.content, msg_context=msg_context, cur_msg=reply
             )
+
+    @commands.command(
+        name="",
+        brief="Sends a random meme.",
+        help="Sends a random meme.",
+    )
+    async def meme(self, ctx: commands.Context):
+        r = requests.get("https://meme-api.com/gimme")
+        data = r.json()
+        embed = discord.Embed(
+            title=data["title"],
+            url=data["postLink"],
+            color=discord.Colour.random(),
+        )
+        embed.set_image(url=data["url"])
+        embed.set_footer(text=f"👍 {data['ups']} | 🙎 {data['author']}")
+        await ctx.send(embed=embed)
+
+    @commands.command(
+        name="",
+        brief="Sends a random greentext.",
+        help="Sends a random greentext.",
+    )
+    async def greentext(self, ctx: commands.Context):
+        r = requests.get("https://meme-api.com/gimme/greentext")
+        data = r.json()
+        embed = discord.Embed(
+            title=data["title"],
+            url=data["postLink"],
+            color=discord.Colour.green(),
+        )
+        embed.set_image(url=data["url"])
+        embed.set_footer(text=f"👍 {data['ups']} | 🙎 {data['author']}")
+        await ctx.send(embed=embed)
 
 
 async def setup(bot: commands.Bot):
