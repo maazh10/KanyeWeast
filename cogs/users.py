@@ -3,6 +3,7 @@ from random import randint
 import sys
 import traceback
 from typing import Annotated
+import requests
 
 import discord
 from discord.ext import commands
@@ -94,7 +95,7 @@ class Users(commands.Cog):
     ##################################################################################################
     ######################################## COG BAN CHECK ###########################################
     ##################################################################################################
-    
+
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
         assert isinstance(dev, DevelopersOnly)
@@ -143,7 +144,6 @@ class Users(commands.Cog):
                 )
         await ctx.send("Have a nice day :kissing_heart:")
 
-
     @commands.command(
         name="annoy",
         brief="Annoys mentioned user",
@@ -182,11 +182,16 @@ class Users(commands.Cog):
         ctx: commands.Context,
         user: Annotated[discord.User, BennysUserConverter] = commands.Author,
     ):
-        with open("roasts.txt", "r") as f:
-            lines = f.readlines()
-            i = randint(0, len(lines))
-
-        await ctx.send(f"{user.mention}. {lines[i]}")
+        if randint(0, 1) < 0.2:
+            with open("roasts.txt", "r") as f:
+                lines = f.readlines()
+                i = randint(0, len(lines))
+            await ctx.send(f"{user.mention}. {lines[i]}")
+        else:
+            res = requests.get(
+                "https://evilinsult.com/generate_insult.php?lang=en&type=json"
+            )
+            await ctx.send(f"{user.mention}. {res.json()['insult']}")
 
     @commands.command(
         aliases=["penis", "dick", "dagger", "glizzy", "ydd", "cock", "schlong"],
