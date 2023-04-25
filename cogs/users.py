@@ -4,6 +4,7 @@ import sys
 import traceback
 from typing import Annotated
 import requests
+import random
 
 import discord
 from discord.ext import commands
@@ -206,6 +207,31 @@ class Users(commands.Cog):
         length = 30 if await self.bot.is_owner(user) else randint(0, 30)
         penis = f"**{user.display_name}'s penis:**\n8{'=' * length}D"
         await ctx.send(penis)
+
+    @commands.command(
+        name="",
+        brief="Sends a pickup line",
+        help="Sends a pickup line for the mentioned user",
+    )
+    async def rizz(
+        self,
+        ctx: commands.Context,
+        user: Annotated[discord.User, BennysUserConverter] = commands.Author,
+    ):
+        res = requests.get("https://vinuxd.vercel.app/api/pickup")
+        line = res.json()["pickup"]
+        if user == ctx.author:
+            await ctx.send(line)
+            return
+        emojis = [
+            "<:cozysip_blob:879363563062435840>",
+            "<:8850_peepoHappyLove:763501999865856060>",
+            ":smiling_face_with_3_hearts:",
+            ":heart:",
+            "<:red_blob:879363248380575745>",
+            ":flushed:",
+        ]
+        await ctx.send(f"{user.mention}, {line} {random.choice(emojis)}")
 
 
 async def setup(bot: commands.Bot):
