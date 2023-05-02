@@ -12,13 +12,12 @@ import requests
 from cogs.dev import DevelopersOnly
 from cogs.utils import UserBanned
 
+
 class Pictures(commands.Cog):
     """All your pic related commands lie here."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.base_directory = os.path.abspath(os.curdir)
-        self.pics_directory = os.path.abspath(os.path.join(os.curdir, "pics"))
         self.set_prev_homie("Nothing", "yet :(")
         self.s3 = boto3.client("s3")
         self.bucket = "discordbotpics"
@@ -133,9 +132,10 @@ class Pictures(commands.Cog):
     )
     async def homies(self, ctx: commands.Context, homie="", opt=""):
         if isinstance(ctx.message.channel, discord.DMChannel):
-            if not (await self.bot.is_owner(
-                ctx.message.author
-            ) or ctx.message.author.id == int(self.keys["ID_LUCE"])):
+            if not (
+                await self.bot.is_owner(ctx.message.author)
+                or ctx.message.author.id == int(self.keys["ID_LUCE"])
+            ):
                 await ctx.send("You can't use this command in DMs")
                 return
 
@@ -257,7 +257,13 @@ class Pictures(commands.Cog):
             await ctx.send("attach an image to be added.")
             return
         for name in folders:
-            if name not in os.listdir(self.pics_directory):
+            result = self.s3.list_objects_v2(
+                Bucket=self.bucket, Prefix="pics/", Delimiter="/"
+            )
+            subdirs = {
+                o.get("Prefix").split("/")[1] for o in result.get("CommonPrefixes")
+            }
+            if name not in subdirs:
                 await ctx.send(
                     f"folder {name} does not exist. use &addfolder to create."
                 )
