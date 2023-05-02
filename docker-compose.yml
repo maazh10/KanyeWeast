@@ -1,5 +1,7 @@
 services:
   bot:
     build: .
-    container_name: bot
+    container_name: bot    
     restart: always
+    volumes:
+      - ~/.aws:/root/.aws
