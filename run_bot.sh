@@ -1,9 +1,18 @@
 #!/bin/sh
 
+tmux new-session -A -s KanyeWeast -d
+
 cd /home/server/KanyeWeast
 
-git fetch
-git reset --hard HEAD
-git merge origin/main
+branch=$(git rev-parse --abbrev-ref HEAD)
 
-docker compose down && docker compose up -d --build
+latest_commit=$(git rev-parse HEAD)
+
+remote_commit=$(git ls-remote $(git config --get remote.origin.url) refs/heads/$branch | awk '{ print $1 }')
+
+if [ $latest_commit != $remote_commit ]; then
+    git fetch
+    git reset --hard origin/$branch
+
+    docker compose down && docker compose up -d --build
+fi
