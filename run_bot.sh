@@ -8,7 +8,7 @@ latest_commit=$(git rev-parse HEAD)
 
 remote_commit=$(git ls-remote $(git config --get remote.origin.url) refs/heads/$branch | awk '{ print $1 }')
 
-if [ $latest_commit != $remote_commit || "$1" == "--force" ]; then
+if [ $latest_commit != $remote_commit ] -o [ "$1" == "--force" ]; then
     git fetch
     git reset --hard origin/$branch
 
