@@ -2,6 +2,7 @@ services:
   bot:
     build: .
     container_name: bot    
-    restart: always
     volumes:
       - ~/.aws:/root/.aws
+      - ./banned_users.pkl:/app/banned_users.pkl
+      - ./database.db:/app/database.db

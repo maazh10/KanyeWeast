@@ -159,8 +159,8 @@ $RECYCLE.BIN/
 .vagrant/
 ### Local rules, see .gitignore.tail to override! ###
 shippable
-.git
-.git*
+# .git
+# .git*
 
 README.md
 KanyeWeast.code-workspace
