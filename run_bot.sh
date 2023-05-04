@@ -1,7 +1,5 @@
 #!/bin/sh
 
-tmux new-session -A -s KanyeWeast
-
 cd /home/server/KanyeWeast
 
 branch=$(git rev-parse --abbrev-ref HEAD)
