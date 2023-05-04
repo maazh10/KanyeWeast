@@ -36,15 +36,15 @@ class DevelopersOnly(commands.Cog):
     async def test1(self, ctx: commands.Context, *, content: str):
         await ctx.send(content)
         
-            
-    @commands.command(
-        name="restart",
-        brief="Restarts bot, ***Dev use only***",
-        help="Restarts bot, don't use if you're not a dev, will not work.",
-    )
-    async def restart(self, ctx: commands.Context):
-        await ctx.send("Restarting...")
-        subprocess.call(self.keys["RUN_BOT"])
+    # NOTE: This is depreciated after the Docker move, but I'm keeping it here for reference.
+    # @commands.command(
+    #     name="restart",
+    #     brief="Restarts bot, ***Dev use only***",
+    #     help="Restarts bot, don't use if you're not a dev, will not work.",
+    # )
+    # async def restart(self, ctx: commands.Context):
+    #     await ctx.send("Restarting...")
+    #     subprocess.call(self.keys["RUN_BOT"])
 
     @commands.command(
         name="getgit",
@@ -53,11 +53,14 @@ class DevelopersOnly(commands.Cog):
         aliases=["gitget"],
     )
     async def getgit(self, ctx: commands.Context):
-        await ctx.send(
-            subprocess.check_output(["git", "log", "-1", "--format='%h %s'"])
-            .decode("ascii")
-            .strip()
-        )
+        if os.environ.get("RUNNING_IN_DOCKER"):
+            with open("commit_message.txt") as f:
+                git_msg = f.read()
+        else:
+            git_msg = subprocess.check_output(
+                ["git", "log", "-1", "--format='%s'"]
+            ).decode("ascii").strip()
+        await ctx.send(git_msg)
 
     @commands.command(
         name="delete",
@@ -73,29 +76,18 @@ class DevelopersOnly(commands.Cog):
 
         await ctx.message.delete()
 
-        def ordinal(x):
-            return [
-                "1st",
-                "2nd",
-                "3rd",
-                "4th",
-                "5th",
-                "6th",
-                "7th",
-                "8th",
-                "9th",
-                "10th",
-                "11th",
-                "12th",
-                "13th",
-                "14th",
-                "15th",
-                "16th",
-                "17th",
-                "18th",
-                "19th",
-                "20th",
-            ][x]
+        def ordinal(x: int) -> str:
+            match x:
+                case 0:
+                    return "1st"
+                case 1:
+                    return "2nd"
+                case 2:
+                    return "3rd"
+                case y if y > 2 or y <= 19:
+                    return f"{y}th"
+                case _:
+                    return "nth"
 
         for i in range(num):
             try:
