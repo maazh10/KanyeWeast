@@ -13,5 +13,4 @@ if [ $latest_commit != $remote_commit || "$1" == "--force" ]; then
     git reset --hard origin/$branch
 
     docker compose down && docker compose up -d --build
-    docker compose logs -f
 fi
