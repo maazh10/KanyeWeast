@@ -1,6 +1,6 @@
 #!/bin/sh
 
-tmux new-session -A -s KanyeWeast -d
+tmux new-session -A -s KanyeWeast
 
 cd /home/server/KanyeWeast
 
