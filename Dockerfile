@@ -16,7 +16,6 @@ RUN pip install -r requirements.txt
 
 COPY lyrics ./lyrics
 COPY roasts.txt .
-COPY secrets.json .
 COPY play.mp3 .
 COPY --from=git commit_message.txt .
 

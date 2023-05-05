@@ -6,3 +6,4 @@ services:
       - ~/.aws:/root/.aws
       - ./banned_users.pkl:/app/banned_users.pkl
       - ./database.db:/app/database.db
+      - ./secrets.json:/app/secrets.json
