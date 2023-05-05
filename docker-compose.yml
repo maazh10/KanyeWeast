@@ -1,6 +1,6 @@
 services:
   bot:
-    build: .
+    image: vbenny42/kanye_weast
     container_name: bot    
     volumes:
       - ~/.aws:/root/.aws
