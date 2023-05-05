@@ -18,7 +18,7 @@ jobs:
       run: |
         echo ${{secrets.DOCKER_PASSWORD}} | docker login -u ${{secrets.DOCKER_USER}} --password-stdin
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag kanyeweastimage:$(date +%s)
+      run: docker build . --file Dockerfile --tag kanyeweastimage
       
     - name: Docker Push
-      run: docker tag kanyeweastimage:$(date +%s) ${{secrets.DOCKER_USER}}/kanye_weast && docker push ${{secrets.DOCKER_USER}}/kanye_weast && docker logout
+      run: docker tag kanyeweastimage ${{secrets.DOCKER_USER}}/kanye_weast && docker push ${{secrets.DOCKER_USER}}/kanye_weast && docker logout
