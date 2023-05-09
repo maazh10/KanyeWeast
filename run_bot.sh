@@ -1,5 +1,5 @@
 #!/bin/sh
 
-cd /home/server/KanyeWeast
+cd /home/ubuntu/KanyeWeast
 
 docker compose pull && docker compose up -d
