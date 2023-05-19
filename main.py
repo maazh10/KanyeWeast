@@ -15,7 +15,7 @@ with open("secrets.json") as f:
 
 help_command = commands.DefaultHelpCommand(no_category="Commands")
 
-owners = {int(keys["ID_BENNY"]), int(keys["ID_STARBOY"])}
+owners = { int(keys["ID_BENNY"]), int(keys["ID_STARBOY"]) }
 
 
 class Bot_With_Sniped_Messages(commands.Bot):
@@ -100,13 +100,7 @@ async def setsnipelen(ctx: commands.Context, len: commands.Range[int, 0, 20] = 5
 
 
 def ordinal(x):
-    return [
-        "1st",
-        "2nd",
-        "3rd",
-        "4th",
-        "5th",
-    ][abs(x) - 1]
+    return ["1st", "2nd", "3rd", "4th", "5th"][abs(x) - 1]
 
 
 @bot.command(

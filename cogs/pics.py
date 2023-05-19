@@ -124,6 +124,8 @@ class Pictures(commands.Cog):
 
     async def get_prev_homie(self, ctx: commands.Context):
         await ctx.send(self.prev_homie, delete_after=5)
+        prev_homie = self.prev_homie.split(" ")
+        await ctx.invoke(self.homies, homie=prev_homie[0], opt=prev_homie[1])
 
     @commands.command(
         name="homie",
