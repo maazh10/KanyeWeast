@@ -223,6 +223,14 @@ class Pictures(commands.Cog):
         await self.homies(ctx, "mir", opt)
 
     @commands.command(
+        name="homz",
+        brief="Sends homie pic of maaz",
+        help="Easy maaz spamming for your enjoyment :)",
+    )
+    async def homz(self, ctx: commands.Context, opt: str = ""):
+        await self.homies(ctx, "maaz", opt)
+
+    @commands.command(
         name="homo",
         brief="Sends homie pic of null",
         help="Easy null spamming for your enjoyment :)",
