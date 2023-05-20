@@ -1,6 +1,6 @@
+from datetime import datetime, timezone
 import io
 import json
-import os
 import random
 
 import Paginator
@@ -19,7 +19,8 @@ class Pictures(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.set_prev_homie("Nothing", "yet :(")
-        self.latest_pic = ""
+        self.latest_date: datetime = datetime.min.replace(tzinfo=timezone.utc)
+        self.latest_pic: str = ""
         self.s3 = boto3.client("s3")
         self.bucket = "discordbotpics"
         self.set_homie_list()
@@ -46,14 +47,15 @@ class Pictures(commands.Cog):
         mtime_sorted_list = sorted(
             result.get("Contents"), key=lambda x: x["LastModified"]
         )
+        if mtime_sorted_list[-1].get("LastModified") > self.latest_date:
+            self.latest_pic = mtime_sorted_list[-1].get("Key", "")
+            self.latest_date = mtime_sorted_list[-1].get("LastModified")
         keys_list = [o.get("Key") for o in mtime_sorted_list]
         if update:
             self.homie_pics_list[homie] = keys_list
         return keys_list
 
     async def save_pic(self, name: str, attachment: discord.Attachment):
-        filename = f"pics/{name}/{attachment.filename}"
-        self.latest_pic = filename
         self.s3.upload_fileobj(
             io.BytesIO(await attachment.read()),
             self.bucket,
