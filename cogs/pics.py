@@ -19,6 +19,7 @@ class Pictures(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.set_prev_homie("Nothing", "yet :(")
+        self.latest_pic = ""
         self.s3 = boto3.client("s3")
         self.bucket = "discordbotpics"
         self.set_homie_list()
@@ -51,10 +52,12 @@ class Pictures(commands.Cog):
         return keys_list
 
     async def save_pic(self, name: str, attachment: discord.Attachment):
+        filename = f"pics/{name}/{attachment.filename}"
+        self.latest_pic = filename
         self.s3.upload_fileobj(
             io.BytesIO(await attachment.read()),
             self.bucket,
-            f"pics/{name}/{attachment.filename}",
+            filename,
         )
 
     def set_homie_list(self):
@@ -127,6 +130,21 @@ class Pictures(commands.Cog):
         prev_homie = self.prev_homie.split(" ")
         await ctx.invoke(self.homies, homie=prev_homie[0], opt=prev_homie[1])
 
+    async def get_latest_homie_pic(self, ctx: commands.Context):
+        if self.latest_pic == "":
+            await ctx.send("No new homie pics added yet :(")
+            return
+        url = self.s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": self.bucket, "Key": self.latest_pic},
+            ExpiresIn=60,
+        )
+        await ctx.send(
+            url,
+            delete_after=5,
+        )
+
+
     @commands.command(
         name="homie",
         brief="Sends random homie pic",
@@ -156,6 +174,9 @@ class Pictures(commands.Cog):
                 return
             case "prev":
                 await self.get_prev_homie(ctx)
+                return
+            case "latest":
+                await self.get_latest_homie_pic(ctx)
                 return
             case _:
                 pass
