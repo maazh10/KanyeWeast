@@ -59,7 +59,7 @@ class Pictures(commands.Cog):
         self.s3.upload_fileobj(
             io.BytesIO(await attachment.read()),
             self.bucket,
-            filename,
+            f"pics/{name}/{attachment.filename}",
         )
 
     def set_homie_list(self):
