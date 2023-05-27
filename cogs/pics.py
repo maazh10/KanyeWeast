@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 import io
 import json
 import random
+import logging
 
 import Paginator
 import boto3
@@ -102,6 +103,7 @@ class Pictures(commands.Cog):
         if name not in self.homie_list:
             await ctx.send("Invalid homie.")
             return
+        logging.getLogger("discord").info(f"Getting {name} {num}")
         try:
             url = self.s3.generate_presigned_url(
                 "get_object",
