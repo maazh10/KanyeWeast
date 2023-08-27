@@ -204,9 +204,10 @@ class Users(commands.Cog):
         ctx: commands.Context,
         user: Annotated[discord.User, BennysUserConverter] = commands.Author,
     ):
-        length = 30 if await self.bot.is_owner(user) else randint(0, 30)
-        if (user.id == 356493485030768640):
-            length = randint(0, 8)
+        length = randint(0, 30)
+        # length = 30 if await self.bot.is_owner(user) else randint(0, 30)
+        # if (user.id == 356493485030768640):
+        #     length = randint(0, 8)
         penis = f"**{user.display_name}'s penis:**\n8{'=' * length}D"
         await ctx.send(penis)
 
