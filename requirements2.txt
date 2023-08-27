@@ -1,4 +1,4 @@
-boto3==1.28.32
+boto3==1.28.35
 discord.py==2.3.2
 lyricsgenius==3.0.1
 openai==0.27.9
