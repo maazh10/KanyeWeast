@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import io
 import json
-import random
+from random import choice, randint
 import logging
 
 import Paginator
@@ -188,7 +188,6 @@ class Pictures(commands.Cog):
         match opt:
             case "latest":
                 opt = "-1"
-
             case "stats":
                 await self.get_homie_stat(ctx, homie)
                 return
@@ -198,8 +197,7 @@ class Pictures(commands.Cog):
 
         homies = self.homie_list
         if not homie:
-            i = random.randint(0, len(homies) - 1)
-            homie = self.homie_list[i]
+            homie = choice(self.homie_list)
         else:
             if homie not in homies:
                 await ctx.send("invalid homie")
@@ -210,7 +208,7 @@ class Pictures(commands.Cog):
                 return
         except ValueError as e:
             print(e)
-        j = random.randint(0, len(self.homie_pics_list[homie]) - 1)
+        j = randint(0, len(self.homie_pics_list[homie]) - 1)
         self.set_prev_homie(homie, j)
         await self.get_num(ctx, homie, j)
 
@@ -233,7 +231,7 @@ class Pictures(commands.Cog):
             )
             embed = discord.Embed(
                 title=f"{homie.capitalize()}'s Gallery 💞",
-                color=discord.Color(random.randint(0, 0xFFFFFF)),
+                color=discord.Color(randint(0, 0xFFFFFF)),
             )
             embed.set_image(url=url)
             embeds.append(embed)
@@ -356,19 +354,21 @@ class Pictures(commands.Cog):
             self.s3.delete_object(Bucket=self.bucket, Key=f"pics/{folder}/")
         await ctx.send(f"folder {folder} not removed beacuse it's non-empty.")
 
+    async def get_presigned_url(self, folder: str) -> str:
+        images = self.sort_homie_pics(folder)
+        return self.s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": self.bucket, "Key": choice(images)},
+            ExpiresIn=60,
+        )
+
     @commands.command(
         name="amogus",
         brief="Sends sus message from server.",
         help="Sends random sus message from server.",
     )
     async def sus(self, ctx: commands.Context):
-        images = self.sort_homie_pics("amogus")
-        i = random.randint(0, len(images) - 1)
-        url = self.s3.generate_presigned_url(
-            ClientMethod="get_object",
-            Params={"Bucket": self.bucket, "Key": images[i]},
-            ExpiresIn=60,
-        )
+        url = await self.get_presigned_url("amogus")
         await ctx.send(url)
 
     @commands.command(
@@ -377,13 +377,7 @@ class Pictures(commands.Cog):
         help="Sends random sus message from server.",
     )
     async def haram(self, ctx: commands.Context):
-        images = self.sort_homie_pics("haram")
-        i = random.randint(0, len(images) - 1)
-        url = self.s3.generate_presigned_url(
-            ClientMethod="get_object",
-            Params={"Bucket": self.bucket, "Key": images[i]},
-            ExpiresIn=60,
-        )
+        url = await self.get_presigned_url("haram")
         await ctx.send(url)
 
     @commands.command(
@@ -393,7 +387,7 @@ class Pictures(commands.Cog):
     )
     async def sad(self, ctx: commands.Context):
         images = self.sort_homie_pics("sad")
-        i = random.randint(0, len(images) - 1)
+        i = randint(0, len(images) - 1)
         url = self.s3.generate_presigned_url(
             ClientMethod="get_object",
             Params={"Bucket": self.bucket, "Key": images[i]},
@@ -413,11 +407,11 @@ class Pictures(commands.Cog):
     )
     async def album(self, ctx: commands.Context, index: int = -1):
         images = self.sort_homie_pics("album")
-        i = random.randint(0, len(images) - 1) if index == -1 else index
+        key = images[index] if index != -1 else choice(images)
         try:
             url = self.s3.generate_presigned_url(
                 ClientMethod="get_object",
-                Params={"Bucket": self.bucket, "Key": images[i]},
+                Params={"Bucket": self.bucket, "Key": key},
                 ExpiresIn=60,
             )
             await ctx.send(url)
