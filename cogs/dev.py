@@ -67,11 +67,15 @@ class DevelopersOnly(commands.Cog):
         brief="Delete bot's latest message.",
         help="Deletes latest message that bot sent by default. Deletes up to the number provided. Only searches 20 messages up.",
     )
-    async def delete(self, ctx: commands.Context, num: commands.Range[int, 0, 20] = 1):
-        bot_msgs = [
+    async def delete(self, ctx: commands.Context, num: commands.Range[int, 0, 20] = 1, user: discord.User | discord.Member = None):
+        if user and user.id == ctx.author.id:
+            await ctx.send("You can't delete your own messages with the bot! Just delete them yourself")
+            return
+
+        msgs = [
             msg
             async for msg in ctx.channel.history(limit=20)
-            if msg.author.id == self.bot.user.id
+            if msg.author.id == self.bot.user.id or (user and msg.author.id == user.id)
         ]
 
         await ctx.message.delete()
@@ -91,7 +95,7 @@ class DevelopersOnly(commands.Cog):
 
         for i in range(num):
             try:
-                latest_message = bot_msgs.pop(0)
+                latest_message = msgs.pop(0)
             except IndexError:
                 latest_message = None
 
@@ -99,7 +103,7 @@ class DevelopersOnly(commands.Cog):
                 await ctx.send(f"Deleting {ordinal(i)} latest message.", delete_after=2)
                 await latest_message.delete()
             else:
-                await ctx.send("Bot hasn't sent a message recently.", delete_after=2)
+                await ctx.send(f"{'Bot' if user is None else user.mention} hasn't sent a message recently.", delete_after=2)
                 return
 
     @commands.command(
