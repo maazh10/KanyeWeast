@@ -148,7 +148,6 @@ class Pictures(commands.Cog):
             delete_after=5,
         )
 
-
     @commands.command(
         name="homie",
         brief="Sends random homie pic",
@@ -303,8 +302,9 @@ class Pictures(commands.Cog):
             else:
                 for attachment in ctx.message.attachments:
                     await self.save_pic(name, attachment)
+                length = len(ctx.message.attachments)
                 await ctx.send(
-                    f"image{'s' * (len(ctx.message.attachments) > 1)} added to {name}."
+                    f"{str(length) + ' ' if length > 1 else ''}image{'s' * (length > 1)} added to {name}."
                 )
                 self.sort_homie_pics(name, update="update")
 
@@ -361,6 +361,23 @@ class Pictures(commands.Cog):
             Params={"Bucket": self.bucket, "Key": choice(images)},
             ExpiresIn=60,
         )
+
+    @commands.is_owner()
+    @commands.command(
+        name="update",
+        brief="Updates homie pics list.",
+        help="Updates homie pics list.",
+    )
+    async def update(self, ctx: commands.Context, homie: str = ""):
+        if homie:
+            if homie not in self.homie_list:
+                await ctx.send("Invalid homie.")
+                return
+            self.sort_homie_pics(homie, update="update")
+            await ctx.send(f"{homie} updated.")
+        else:
+            await ctx.send("homie list updated.")
+            self.set_homie_list()
 
     @commands.command(
         name="amogus",

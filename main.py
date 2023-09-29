@@ -15,7 +15,7 @@ with open("secrets.json") as f:
 
 help_command = commands.DefaultHelpCommand(no_category="Commands")
 
-owners = { int(keys["ID_BENNY"]), int(keys["ID_STARBOY"]) }
+owners = {int(keys["ID_BENNY"]), int(keys["ID_STARBOY"])}
 
 
 class Bot_With_Sniped_Messages(commands.Bot):
