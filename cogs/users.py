@@ -1,4 +1,5 @@
 import asyncio
+from secrets import randbelow
 from random import randint
 import sys
 import traceback
@@ -204,7 +205,8 @@ class Users(commands.Cog):
         ctx: commands.Context,
         user: Annotated[discord.User, BennysUserConverter] = commands.Author,
     ):
-        length = randint(0, 30)
+        # length = randint(0, 30)
+        length = randbelow(31)
         # length = 30 if await self.bot.is_owner(user) else randint(0, 30)
         # if (user.id == 356493485030768640):
         #     length = randint(0, 8)
