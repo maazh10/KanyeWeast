@@ -370,6 +370,22 @@ class Miscellaneous(commands.Cog):
         embed.set_footer(text=f"👍 {data['ups']} | 🙎 {data['author']}")
         await ctx.send(embed=embed)
 
+    @commands.command(
+        name="bb",
+        brief="Sends a random Breaking Bad quote.",
+        help="Sends a random Breaking Bad quote.",
+    )
+    async def breaking_bad(self, ctx: commands.Context):
+        res = requests.get("https://api.breakingbadquotes.xyz/v1/quotes")
+        data = res.json()
+        embed = discord.Embed(color=discord.Colour.green())
+        embed.description = data[0]["quote"]
+        embed.set_footer(text=data[0]["author"])
+        embed.set_thumbnail(
+            url="https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Breaking_Bad_logo.svg/800px-Breaking_Bad_logo.svg.png"
+        )
+        await ctx.send(embed=embed)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
