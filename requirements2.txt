@@ -1,8 +1,7 @@
-boto3==1.28.75
+boto3==1.28.77
 discord.py==2.3.2
 lyricsgenius==3.0.1
 openai==0.28.1
-Paginator==0.5.1
 Pillow==10.1.0
 Requests==2.31.0
 spotipy==2.23.0
