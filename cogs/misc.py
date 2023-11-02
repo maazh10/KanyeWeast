@@ -3,12 +3,12 @@ import json
 import random
 
 import discord
-from discord.ext import commands
 import openai
 import requests
+from discord.ext import commands
 
 from cogs.dev import DevelopersOnly
-from cogs.utils import UserBanned
+from cogs.utils import UserBanned, get_quote
 
 
 class Miscellaneous(commands.Cog):
@@ -19,9 +19,9 @@ class Miscellaneous(commands.Cog):
         with open("secrets.json", "r") as f:
             self.keys = json.load(f)
 
-    ##################################################################################################
-    ######################################## COG BAN CHECK ###########################################
-    ##################################################################################################
+    ##############################
+    ####### COG BAN CHECK ########
+    ##############################
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
@@ -30,9 +30,9 @@ class Miscellaneous(commands.Cog):
             raise UserBanned(ctx.message.author)
         return True
 
-    ##################################################################################################
-    ##################################################################################################
-    ##################################################################################################
+    ##############################
+    ##############################
+    ##############################
 
     @commands.command(
         name="hello",
@@ -75,11 +75,6 @@ class Miscellaneous(commands.Cog):
         assert self.bot.user.avatar is not None
         embed.color = 3348751
         embed.set_author(name="Kanye West", icon_url=self.bot.user.avatar.url)
-
-        def get_quote() -> str:
-            response = requests.get("https://api.kanye.rest")
-            json_data = json.loads(response.text)
-            return json_data["quote"]
 
         embed.description = (
             f"[{get_quote()}](https://www.youtube.com/watch?v=dQw4w9WgXcQ)"

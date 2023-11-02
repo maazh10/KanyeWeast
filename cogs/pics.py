@@ -4,7 +4,7 @@ import json
 from random import choice, randint
 import logging
 
-import Paginator
+# import Paginator
 import boto3
 import discord
 from discord.ext import commands

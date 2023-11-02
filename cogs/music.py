@@ -1,17 +1,18 @@
-from asyncio import sleep
 import json
-from random import randint
 import random
 import unicodedata
+from asyncio import sleep
+from random import randint
 
 import discord
-from discord.ext import commands
 import lyricsgenius
 import spotipy
+from discord.ext import commands
 from spotipy.oauth2 import SpotifyClientCredentials
 
 from cogs.dev import DevelopersOnly
 from cogs.utils import UserBanned, get_color
+
 
 class Music(commands.Cog):
     """This category has all music related commands."""
@@ -21,9 +22,9 @@ class Music(commands.Cog):
         with open("secrets.json") as f:
             self.keys = json.load(f)
 
-    ##################################################################################################
-    ######################################## COG BAN CHECK ###########################################
-    ##################################################################################################
+    ##############################
+    ####### COG BAN CHECK ########
+    ##############################
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
