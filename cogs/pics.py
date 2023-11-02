@@ -1,14 +1,14 @@
-from datetime import datetime, timezone
 import io
 import json
-from random import choice, randint
 import logging
+from datetime import datetime, timezone
+from random import choice, randint
 
 # import Paginator
 import boto3
 import discord
-from discord.ext import commands
 import requests
+from discord.ext import commands
 
 from cogs.dev import DevelopersOnly
 from cogs.utils import UserBanned
@@ -28,9 +28,9 @@ class Pictures(commands.Cog):
         with open("secrets.json") as f:
             self.keys = json.load(f)
 
-    ##################################################################################################
-    ######################################## COG BAN CHECK ###########################################
-    ##################################################################################################
+    ##############################
+    ####### COG BAN CHECK ########
+    ##############################
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
@@ -39,9 +39,9 @@ class Pictures(commands.Cog):
             raise UserBanned(ctx.message.author)
         return True
 
-    ##################################################################################################
-    ##################################################################################################
-    ##################################################################################################
+    ##############################
+    ##############################
+    ##############################
 
     def sort_homie_pics(self, homie: str, update: str = "") -> list[str | None]:
         result = self.s3.list_objects_v2(Bucket=self.bucket, Prefix=f"pics/{homie}/")
