@@ -4,9 +4,9 @@ import logging
 from datetime import datetime, timezone
 from random import choice, randint
 
-# import Paginator
 import boto3
 import discord
+import Paginator
 import requests
 from discord.ext import commands
 
