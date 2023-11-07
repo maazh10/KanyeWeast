@@ -386,6 +386,19 @@ class Miscellaneous(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @commands.command(
+        name="YesOrNo",
+        brief="Sends a random yes or no.",
+        help="Sends a random yes or no.",
+    )
+    async def yesorno(self, ctx: commands.Context):
+        res = requests.get("https://yesno.wtf/api")
+        data = res.json()
+        embed = discord.Embed(color=discord.Colour.random())
+        embed.description = data["answer"]
+        embed.set_image(url=data["image"])
+        await ctx.send(embed=embed)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Miscellaneous(bot))
