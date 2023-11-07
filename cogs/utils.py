@@ -1,8 +1,8 @@
-import sqlite3
+import json
 
-from PIL import Image
-from discord.ext import commands
 import requests
+from discord.ext import commands
+from PIL import Image
 
 
 def get_color(image_url: str, palette_size=16) -> int:
@@ -57,3 +57,9 @@ def category_map(name: str):
         return categories[name]
     except KeyError:
         return None
+
+
+def get_quote() -> str:
+    response = requests.get("https://api.kanye.rest")
+    json_data = json.loads(response.text)
+    return json_data["quote"]

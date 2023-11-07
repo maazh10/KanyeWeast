@@ -1,13 +1,13 @@
 import asyncio
-from secrets import randbelow
-from random import randint
+import random
 import sys
 import traceback
+from random import randint
+from secrets import randbelow
 from typing import Annotated
-import requests
-import random
 
 import discord
+import requests
 from discord.ext import commands
 
 from cogs.dev import DevelopersOnly
@@ -94,9 +94,9 @@ class Users(commands.Cog):
             finally:
                 return ctx.author
 
-    ##################################################################################################
-    ######################################## COG BAN CHECK ###########################################
-    ##################################################################################################
+    ##############################
+    ####### COG BAN CHECK ########
+    ##############################
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
@@ -105,9 +105,9 @@ class Users(commands.Cog):
             raise UserBanned(ctx.message.author)
         return True
 
-    ##################################################################################################
-    ##################################### CUSTOM USER CONVERTER ######################################
-    ##################################################################################################
+    ##############################
+    ### CUSTOM USER CONVERTER ####
+    ##############################
 
     class BennysUserConverter(commands.UserConverter):
         async def convert(self, ctx, argument) -> discord.abc.User:
@@ -120,7 +120,7 @@ class Users(commands.Cog):
                 )
                 return ctx.author
 
-    ##################################################################################################
+    ##############################
 
     async def annoy_logic(
         self,

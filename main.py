@@ -1,9 +1,9 @@
 import asyncio
 import json
 import logging
-from logging.handlers import SysLogHandler
 import socket
 import sys
+from logging.handlers import SysLogHandler
 
 import discord
 from discord.ext import commands
@@ -205,6 +205,7 @@ async def load_cogs():
         "cogs.users",
         "cogs.globallisteners",
         "cogs.trivia",
+        "cogs.loops",
     ]
     for cog in cog_list:
         await bot.load_extension(cog)

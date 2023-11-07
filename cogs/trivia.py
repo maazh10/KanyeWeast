@@ -6,8 +6,8 @@ import sqlite3
 import time
 
 import discord
-from discord.ext import commands
 import requests
+from discord.ext import commands
 
 from cogs.dev import DevelopersOnly
 from cogs.utils import UserBanned, category_map
@@ -22,9 +22,9 @@ class TriviaCog(commands.Cog):
         with open("secrets.json", "r") as f:
             self.secrets = json.load(f)
 
-    ##################################################################################################
-    ######################################## COG BAN CHECK ###########################################
-    ##################################################################################################
+    ##############################
+    ####### COG BAN CHECK ########
+    ##############################
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
@@ -33,9 +33,9 @@ class TriviaCog(commands.Cog):
             raise UserBanned(ctx.message.author)
         return True
 
-    ##################################################################################################
-    ##################################################################################################
-    ##################################################################################################
+    ##############################
+    ##############################
+    ##############################
 
     async def get_user_name(self, ctx: commands.Context, row: tuple) -> str:
         user_id = row[0]

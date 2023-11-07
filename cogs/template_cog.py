@@ -11,9 +11,9 @@ class __COG_NAME__(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    ##################################################################################################
-    ######################################## COG BAN CHECK ###########################################
-    ##################################################################################################
+    ##############################
+    ####### COG BAN CHECK ########
+    ##############################
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         dev = self.bot.get_cog("DevelopersOnly")
@@ -22,9 +22,9 @@ class __COG_NAME__(commands.Cog):
             raise UserBanned(ctx.message.author)
         return True
 
-    ##################################################################################################
-    ##################################################################################################
-    ##################################################################################################
+    ##############################
+    ##############################
+    ##############################
 
     # Add your commands here
     @commands.command(
@@ -32,7 +32,7 @@ class __COG_NAME__(commands.Cog):
         aliases=["__COMMAND_ALIAS__"],
         brief="__COMMAND_BRIEF__",
         help="__COMMAND_DESCRIPTION__",
-            )
+    )
     async def __COMMAND_NAME__(self, ctx: commands.Context):
         await ctx.send("Hello World!")
 
