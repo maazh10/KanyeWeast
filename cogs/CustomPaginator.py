@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 import boto3
 import discord
 from discord.ext import commands
@@ -49,8 +51,10 @@ class Simple(discord.ui.View):
         self.current_page = None
         self.page_counter = None
         self.total_page_count = None
+
         self.s3 = boto3.client("s3")
         self.bucket = "discordbotpics"
+        self.logger = logging.getLogger("discord")
 
         super().__init__(timeout=timeout)
 
@@ -111,6 +115,7 @@ class Simple(discord.ui.View):
         )
 
     def build_embed(self, elem: tuple[discord.Embed, str]):
+        self.logger.info(f"Building embed for {elem[1]}")
         embed = elem[0]
         url = self.s3.generate_presigned_url(
             "get_object",
