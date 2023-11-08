@@ -6,10 +6,10 @@ from random import choice, randint
 
 import boto3
 import discord
-import Paginator
 import requests
 from discord.ext import commands
 
+import cogs.CustomPaginator as BennysCustomPaginator
 from cogs.dev import DevelopersOnly
 from cogs.utils import UserBanned
 
@@ -223,18 +223,13 @@ class Pictures(commands.Cog):
         images = self.homie_pics_list[homie]
         embeds = []
         for i in range(len(images) - 1, -1, -1):
-            url = self.s3.generate_presigned_url(
-                "get_object",
-                Params={"Bucket": self.bucket, "Key": self.homie_pics_list[homie][i]},
-                ExpiresIn=60,
-            )
             embed = discord.Embed(
                 title=f"{homie.capitalize()}'s Gallery 💞",
                 color=discord.Color(randint(0, 0xFFFFFF)),
             )
-            embed.set_image(url=url)
-            embeds.append(embed)
-        await Paginator.Simple().start(ctx, pages=embeds)
+            key = self.homie_pics_list[homie][i]
+            embeds.append((embed, key))
+        await BennysCustomPaginator.Simple().start(ctx, pages=embeds)
 
     @commands.command(
         name="homir",
