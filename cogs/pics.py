@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from random import choice, randint
+from fuzzywuzzy import process
 
 import boto3
 import discord
@@ -110,6 +111,7 @@ class Pictures(commands.Cog):
                 Params={"Bucket": self.bucket, "Key": self.homie_pics_list[name][num]},
                 ExpiresIn=60,
             )
+            await ctx.send(f"{name.capitalize()} #{num}", delete_after=5)
             await ctx.send(
                 url,
                 delete_after=5,
@@ -199,8 +201,8 @@ class Pictures(commands.Cog):
             homie = choice(self.homie_list)
         else:
             if homie not in homies:
-                await ctx.send("invalid homie")
-                return
+                closest_match, _ = process.extractOne(homie, homies)
+                homie = closest_match
         try:
             if opt:
                 await self.get_num(ctx, homie, int(opt))
