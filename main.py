@@ -5,10 +5,22 @@ import socket
 import sys
 from logging.handlers import SysLogHandler
 
+import boto3
 import discord
 from discord.ext import commands
 
 from cogs.utils import get_color
+
+
+def get_credentials():
+    s3 = boto3.client("s3")
+    bucket = "kanyeweastcredentials"
+    s3.download_file(bucket, "secrets.json", "secrets.json")
+    s3.download_file(bucket, "database.db", "database.db")
+    s3.download_file(bucket, "banned_users.pkl", "banned_users.pkl")
+
+
+get_credentials()
 
 with open("secrets.json") as f:
     keys = json.load(f)

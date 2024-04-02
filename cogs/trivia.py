@@ -5,6 +5,7 @@ import random
 import sqlite3
 import time
 
+import boto3
 import discord
 import requests
 from discord.ext import commands
@@ -36,6 +37,11 @@ class TriviaCog(commands.Cog):
     ##############################
     ##############################
     ##############################
+
+    def update_db_file(self):
+        s3 = boto3.client("s3")
+        bucket = "kanyeweastcredentials"
+        s3.upload_file("database.db", bucket, "database.db")
 
     async def get_user_name(self, ctx: commands.Context, row: tuple) -> str:
         user_id = row[0]
@@ -80,6 +86,7 @@ class TriviaCog(commands.Cog):
         embed.description = board
         await ctx.send(embed=embed)
         conn.close()
+        self.update_db()
         return
 
     def update_db(

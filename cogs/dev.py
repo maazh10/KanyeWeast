@@ -3,8 +3,10 @@ import os
 import pickle
 import subprocess
 
+import boto3
 import discord
 from discord.ext import commands
+
 
 class DevelopersOnly(commands.Cog):
     """This category is only for dev use. If you're not a dev and try to use you could be banned."""
@@ -35,7 +37,7 @@ class DevelopersOnly(commands.Cog):
     )
     async def test1(self, ctx: commands.Context, *, content: str):
         await ctx.send(content)
-        
+
     # NOTE: This is depreciated after the Docker move, but I'm keeping it here for reference.
     # @commands.command(
     #     name="restart",
@@ -57,9 +59,11 @@ class DevelopersOnly(commands.Cog):
             with open("commit_message.txt") as f:
                 git_msg = f.read()
         else:
-            git_msg = subprocess.check_output(
-                ["git", "log", "-1", "--format='%s'"]
-            ).decode("ascii").strip()
+            git_msg = (
+                subprocess.check_output(["git", "log", "-1", "--format='%s'"])
+                .decode("ascii")
+                .strip()
+            )
         await ctx.send(git_msg)
 
     @commands.command(
@@ -67,9 +71,16 @@ class DevelopersOnly(commands.Cog):
         brief="Delete bot's latest message.",
         help="Deletes latest message that bot sent by default. Deletes up to the number provided. Only searches 20 messages up.",
     )
-    async def delete(self, ctx: commands.Context, num: commands.Range[int, 0, 20] = 1, user: discord.User | discord.Member = None):
+    async def delete(
+        self,
+        ctx: commands.Context,
+        num: commands.Range[int, 0, 20] = 1,
+        user: discord.User | discord.Member = None,
+    ):
         if user and user.id == ctx.author.id:
-            await ctx.send("You can't delete your own messages with the bot! Just delete them yourself")
+            await ctx.send(
+                "You can't delete your own messages with the bot! Just delete them yourself"
+            )
             return
 
         msgs = [
@@ -103,36 +114,49 @@ class DevelopersOnly(commands.Cog):
                 await ctx.send(f"Deleting {ordinal(i)} latest message.", delete_after=2)
                 await latest_message.delete()
             else:
-                await ctx.send(f"{'Bot' if user is None else user.mention} hasn't sent a message recently.", delete_after=2)
+                await ctx.send(
+                    f"{'Bot' if user is None else user.mention} hasn't sent a message recently.",
+                    delete_after=2,
+                )
                 return
 
     @commands.command(
-            name="ban",
-            brief="Bans mentioned user(s)",
-            help="Bans mentioned user(s) from using commands from the Miscellaneous cog"
+        name="ban",
+        brief="Bans mentioned user(s)",
+        help="Bans mentioned user(s) from using commands from the Miscellaneous cog",
     )
     async def ban(self, ctx: commands.Context):
-       if ctx.message.mentions:
-           for user in ctx.message.mentions:
-               await self.ban_user(ctx, user)
+        if ctx.message.mentions:
+            for user in ctx.message.mentions:
+                await self.ban_user(ctx, user)
 
     @commands.command(
-            name="unban",
-            brief="Unbans mentioned user(s)",
-            help="Unbans mentioned user(s) from using commands from the Miscellaneous cog"
+        name="unban",
+        brief="Unbans mentioned user(s)",
+        help="Unbans mentioned user(s) from using commands from the Miscellaneous cog",
     )
     async def unban(self, ctx: commands.Context):
-       if ctx.message.mentions:
-           for user in ctx.message.mentions:
-               await self.unban_user(ctx, user)
+        if ctx.message.mentions:
+            for user in ctx.message.mentions:
+                await self.unban_user(ctx, user)
 
-    async def ban_user(self, ctx: commands.Context, user: discord.User | discord.Member):
+    def upload_banned_file(self):
+        s3 = boto3.client("s3")
+        bucket = "kanyeweastcredentials"
+        s3.upload_file("banned_users.pkl", bucket, "banned_users.pkl")
+
+    async def ban_user(
+        self, ctx: commands.Context, user: discord.User | discord.Member
+    ):
         self.banned_set.add(user.id)
         with open("banned_users.pkl", "wb") as f:
             pickle.dump(self.banned_set, f)
         await ctx.send(f"{user.mention} banned")
+        self.upload_banned_file()
 
-    async def unban_user(self, ctx: commands.Context, user: discord.User | discord.Member):
+    async def unban_user(
+        self, ctx: commands.Context, user: discord.User | discord.Member
+    ):
         try:
             self.banned_set.remove(user.id)
             with open("banned_users.pkl", "wb") as f:
@@ -141,6 +165,7 @@ class DevelopersOnly(commands.Cog):
             await ctx.send(f"{user.mention} not in banned set.")
             return
         await ctx.send(f"{user.mention} unbanned")
+        self.upload_banned_file()
 
     def load_banned_set(self) -> set[int]:
         if not os.path.isfile("banned_users.pkl"):
@@ -164,10 +189,14 @@ class DevelopersOnly(commands.Cog):
         else:
             name_function = lambda id: self.bot.get_user(id).name
         banned_list = "```\n"
-        banned_list += "\n".join(map(name_function, self.banned_set)) if self.banned_set else "No banned users yet."
+        banned_list += (
+            "\n".join(map(name_function, self.banned_set))
+            if self.banned_set
+            else "No banned users yet."
+        )
         banned_list += "\n```"
         await ctx.send(banned_list)
-        
+
     @commands.command(
         name="toggle",
         brief="toggles specified command",
@@ -177,18 +206,31 @@ class DevelopersOnly(commands.Cog):
         command = self.bot.get_command(command_str)
 
         if command is None:
-            embed = discord.Embed(title="ERROR", description="I can't find a command with that name!", color=0xff0000)
+            embed = discord.Embed(
+                title="ERROR",
+                description="I can't find a command with that name!",
+                color=0xFF0000,
+            )
             await ctx.send(embed=embed)
 
         elif ctx.command == command:
-            embed = discord.Embed(title="ERROR", description="You cannot disable this command.", color=0xff0000)
+            embed = discord.Embed(
+                title="ERROR",
+                description="You cannot disable this command.",
+                color=0xFF0000,
+            )
             await ctx.send(embed=embed)
 
         else:
             command.enabled = not command.enabled
             ternary = "enabled" if command.enabled else "disabled"
-            embed = discord.Embed(title="Toggle", description=f"I have {ternary} {command.qualified_name} for you!", color=0xff00c8)
+            embed = discord.Embed(
+                title="Toggle",
+                description=f"I have {ternary} {command.qualified_name} for you!",
+                color=0xFF00C8,
+            )
             await ctx.send(embed=embed)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(DevelopersOnly(bot))
